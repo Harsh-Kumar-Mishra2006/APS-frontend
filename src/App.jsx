@@ -1,5 +1,5 @@
 // src/App.jsx
-import React from 'react'
+import React, { Children } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import Navbar from './components/common/Navbar'
@@ -15,6 +15,7 @@ import AdminAddInfo from './components/Admin/addInfo/adminAddInfo'
 import StudentData from './components/Student/studentdata'
 import ParentData from './components/Parent/parentdata'
 import TeacherData from './components/Teacher/teacherdata'
+import UserCard from './components/common/childcard'
 
 const App = () => {
   return (
@@ -44,7 +45,8 @@ const App = () => {
               element={
                 <ContactPage/>
               } />
-              <Route path="/gallery" element={<div className="min-h-screen flex items-center justify-center"><h1 className="text-4xl font-bold">Gallery Page - Coming Soon</h1></div>} />
+              <Route path="/gallery" element={<UserCard/>}>
+              </Route>
             </Routes>
           </main>
           <Footer/>
