@@ -10,13 +10,15 @@ import Signup from './components/auth/signup'
 import ContactPage from './pages/Contact/contactPage'
 import AboutUsPage from './pages/About/aboutUsPage'
 import AdmissionPage from './pages/Admission/admissionsPage'
-import AdminAddInfo from './components/Admin/addInfo/adminAddInfo'
 import StudentData from './components/Student/studentdata'
 import ParentData from './components/Parent/parentdata'
 import TeacherData from './components/Teacher/teacherdata'
 import UserCard from './components/common/childcard'
 import ChangePassword from './components/auth/changePassword'
 import AddMembers from './pages/AddMembers/AddMembers'
+import StudentDashboard from './pages/student/StudentDashboard'
+import ParentDashboard from './pages/Parent/ParentDashboard'
+import TeacherDashboard from './pages/teacher/TeacherDashboard'
 
 const App = () => {
   return (
@@ -32,10 +34,12 @@ const App = () => {
               <Route path="/signup" element={<Signup />} />
               <Route path="/change-password" element={<ChangePassword/>} />
               <Route path="/add-members" element={<AddMembers />} />
-              <Route path='/add-data' element={<AdminAddInfo/>}/>
               <Route path='/student-data' element={<StudentData/>}/>
               <Route path='/parent-data' element={<ParentData/>}/>
               <Route path='/teacher-data' element={<TeacherData/>}/>
+              <Route path='/student-dashboard' element={<StudentDashboard/>}/>
+              <Route path='/parent-dashboard' element={<ParentDashboard/>}/>
+              <Route path='/teacher-dashboard' element={<TeacherDashboard/>}/> 
               {/* Add more routes as needed */}
               <Route path="/about" element={
                 <AboutUsPage/>
