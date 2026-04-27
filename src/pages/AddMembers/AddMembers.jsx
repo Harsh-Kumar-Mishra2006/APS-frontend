@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import AddStudentForm from '../../components/form/addStudentForm';
 import AddTeacherForm from '../../components/form/AddTeacherForm';
 import AddParentForm from '../../components/form/addParentForm';
-import { UserPlus, GraduationCap, ChalkboardUser, Users, X, CheckCircle } from 'lucide-react';
+import { UserPlus, GraduationCap, Users, X, CheckCircle } from 'lucide-react';
 
 const AddMembers = () => {
   const { user } = useAuth();
