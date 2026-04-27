@@ -7,7 +7,6 @@ import HomeHeroPage from './components/Heropage/Homeheropage'
 import Footer from './components/common/Footer'
 import Login from './components/auth/login'
 import Signup from './components/auth/signup'
-import AddMembers from './components/Admin/AddMembers'
 import ContactPage from './pages/Contact/contactPage'
 import AboutUsPage from './pages/About/aboutUsPage'
 import AdmissionPage from './pages/Admission/admissionsPage'
@@ -17,6 +16,7 @@ import ParentData from './components/Parent/parentdata'
 import TeacherData from './components/Teacher/teacherdata'
 import UserCard from './components/common/childcard'
 import ChangePassword from './components/auth/changePassword'
+import AddMembers from './pages/AddMembers/AddMembers'
 
 const App = () => {
   return (
@@ -31,7 +31,7 @@ const App = () => {
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/change-password" element={<ChangePassword/>} />
-              <Route path="/add-members" element={<AddMembers/>}/>
+              <Route path="/add-members" element={<AddMembers />} />
               <Route path='/add-data' element={<AdminAddInfo/>}/>
               <Route path='/student-data' element={<StudentData/>}/>
               <Route path='/parent-data' element={<ParentData/>}/>
