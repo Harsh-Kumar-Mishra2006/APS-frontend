@@ -16,6 +16,7 @@ import StudentData from './components/Student/studentdata'
 import ParentData from './components/Parent/parentdata'
 import TeacherData from './components/Teacher/teacherdata'
 import UserCard from './components/common/childcard'
+import ChangePassword from './components/auth/changePassword'
 
 const App = () => {
   return (
@@ -29,6 +30,7 @@ const App = () => {
               <Route path="/dashboard" element={<HomeHeroPage/>}/>
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/change-password" element={<ChangePassword/>} />
               <Route path="/add-members" element={<AddMembers/>}/>
               <Route path='/add-data' element={<AdminAddInfo/>}/>
               <Route path='/student-data' element={<StudentData/>}/>

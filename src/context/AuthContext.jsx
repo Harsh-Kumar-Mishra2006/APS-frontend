@@ -1,5 +1,6 @@
 // src/context/AuthContext.jsx
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import api from '../utils/api';
 
 const AuthContext = createContext();
 
@@ -16,7 +17,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
 
-  // Check if user is logged in on app start
+  // Check auth on app start
   useEffect(() => {
     checkAuth();
   }, []);
@@ -25,28 +26,20 @@ export const AuthProvider = ({ children }) => {
     try {
       const token = localStorage.getItem('token');
       if (token) {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/verify`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        const response = await api.get('/auth/verify');
         
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.data.valid) {
-            setUser(data.data.user);
-          } else {
-            localStorage.removeItem('token');
-            setUser(null);
-          }
+        if (response.data.success && response.data.data.valid) {
+          setUser(response.data.data.user);
         } else {
           localStorage.removeItem('token');
+          localStorage.removeItem('user');
           setUser(null);
         }
       }
     } catch (error) {
       console.error('Auth check failed:', error);
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
       setUser(null);
     } finally {
       setLoading(false);
@@ -54,322 +47,203 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ========== NEW AUTHENTICATION FLOW ==========
-
-// In AuthContext.jsx - Fix checkEmailRegistration function
-const checkEmailRegistration = async (email) => {
-  try {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/check-email`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email }),
-    });
-    
-    const data = await response.json();
-    
-    if (data.success) {
-      return { 
-        success: true, 
-        data: data.data,
-        isRegistered: true,
-        needsSetup: data.data?.needsSetup
-      };
-    } else {
-      return { 
-        success: false, 
-        error: data.error || 'Email not registered',
-        isRegistered: false
-      };
-    }
-    
-  } catch (error) {
-    console.error('Check email error:', error);
-    return { 
-      success: false, 
-      error: 'Network error. Please check your connection.',
-      isRegistered: false
-    };
-  }
-};
-
-  // 2. Complete registration for pre-registered users
-  // In completeRegistration function
-const completeRegistration = async (registrationData) => {
-  try {
-    console.log('Sending registration data:', registrationData);
-    
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/complete-registration`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(registrationData),
-    });
-    
-    const data = await response.json();
-    console.log('Registration response:', data);
-    
-    if (data.success) {
-      localStorage.setItem('token', data.data.token);
-      localStorage.setItem('user', JSON.stringify(data.data.user));
-      setUser(data.data.user);
-      return { 
-        success: true, 
-        message: data.message,
-        user: data.data.user
-      };
-    } else {
-      console.error('Registration failed:', data.error);
-      return { 
-        success: false, 
-        error: data.error || data.message || 'Registration failed',
-        needsLogin: data.needsLogin
-      };
-    }
-  } catch (error) {
-    console.error('Complete registration error:', error);
-    return { 
-      success: false, 
-      error: 'Network error. Please try again.'
-    };
-  }
-};
-
-const login = async (credentials) => {
-  try {
-    // SIMPLE: Just send to backend, no pre-checks
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        identifier: credentials.identifier || credentials.email,
-        password: credentials.password,
-        role: credentials.role
-      }),
-    });
-    
-    const data = await response.json();
-    
-    if (data.success) {
-      localStorage.setItem('token', data.data.token);
-      localStorage.setItem('user', JSON.stringify(data.data.user));
-      setUser(data.data.user);
-      return { 
-        success: true, 
-        message: data.message,
-        user: data.data.user
-      };
-    } else {
-      // Return whatever backend says
-      return { 
-        success: false, 
-        error: data.error || data.message
-      };
-    }
-  } catch (error) {
-    console.error('Login error:', error);
-    return { 
-      success: false, 
-      error: 'Network error. Please try again.'
-    };
-  }
-};
-
-  // 4. Admin signup (Demo only - creates admin without needing admin to add them)
+  // ============= ADMIN SIGNUP (First admin creates account) =============
   const adminSignup = async (adminData) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/admin/signup`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(adminData),
+      const response = await api.post('/auth/admin/signup', {
+        name: adminData.name,
+        email: adminData.email,
+        username: adminData.username,
+        phone: adminData.phone,
+        password: adminData.password
       });
       
-      const data = await response.json();
-      
-      if (data.success) {
-        localStorage.setItem('token', data.data.token);
-        setUser(data.data.user);
+      if (response.data.success) {
+        localStorage.setItem('token', response.data.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.data.user));
+        setUser(response.data.data.user);
         return { 
           success: true, 
-          message: data.message, 
-          user: data.data.user 
+          message: response.data.message, 
+          user: response.data.data.user 
         };
       } else {
         return { 
           success: false, 
-          error: data.error || data.message 
+          error: response.data.error || 'Signup failed' 
         };
       }
     } catch (error) {
       console.error('Admin signup error:', error);
       return { 
         success: false, 
-        error: 'Network error. Please try again.'
+        error: error.response?.data?.error || 'Network error. Please try again.'
       };
     }
   };
 
-  // 5. Forgot password
-  const forgotPassword = async (email) => {
+  // ============= LOGIN (For all users: admin, teacher, student, parent) =============
+  const login = async (credentials) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/forgot-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
+      const response = await api.post('/auth/login', {
+        email: credentials.email,
+        password: credentials.password
       });
       
-      const data = await response.json();
+      if (response.data.success) {
+        localStorage.setItem('token', response.data.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.data.user));
+        setUser(response.data.data.user);
+        
+        return { 
+          success: true, 
+          message: response.data.message,
+          user: response.data.data.user,
+          needsPasswordChange: response.data.data.needsPasswordChange
+        };
+      } else {
+        return { 
+          success: false, 
+          error: response.data.error || 'Login failed'
+        };
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      return { 
+        success: false, 
+        error: error.response?.data?.error || 'Network error. Please try again.'
+      };
+    }
+  };
+
+  // ============= CHANGE PASSWORD (First login or voluntary) =============
+  const changePassword = async (passwordData) => {
+    try {
+      const response = await api.post('/auth/change-password', {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword
+      });
+      
+      if (response.data.success) {
+        // Update token if returned
+        if (response.data.data?.token) {
+          localStorage.setItem('token', response.data.data.token);
+        }
+        return {
+          success: true,
+          message: response.data.message
+        };
+      } else {
+        return {
+          success: false,
+          error: response.data.error
+        };
+      }
+    } catch (error) {
+      console.error('Change password error:', error);
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Failed to change password'
+      };
+    }
+  };
+
+  // ============= FORGOT PASSWORD =============
+  const forgotPassword = async (email) => {
+    try {
+      const response = await api.post('/auth/forgot-password', { email });
       
       return {
-        success: data.success,
-        message: data.message || data.error,
-        resetToken: data.data?.resetToken
+        success: response.data.success,
+        message: response.data.message,
+        resetToken: response.data.data?.resetToken
       };
     } catch (error) {
       console.error('Forgot password error:', error);
       return { 
         success: false, 
-        error: 'Network error. Please try again.'
+        error: error.response?.data?.error || 'Network error. Please try again.'
       };
     }
   };
 
-  // 6. Reset password
+  // ============= RESET PASSWORD =============
   const resetPassword = async (resetData) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/reset-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(resetData),
+      const response = await api.post('/auth/reset-password', {
+        token: resetData.token,
+        newPassword: resetData.newPassword
       });
       
-      const data = await response.json();
-      
       return {
-        success: data.success,
-        message: data.message || data.error
+        success: response.data.success,
+        message: response.data.message
       };
     } catch (error) {
       console.error('Reset password error:', error);
       return { 
         success: false, 
-        error: 'Network error. Please try again.'
+        error: error.response?.data?.error || 'Failed to reset password'
       };
     }
   };
 
-  // 7. Logout
+  // ============= LOGOUT =============
   const logout = async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (token) {
-        await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/logout`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-      }
+      await api.post('/auth/logout');
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
       setUser(null);
     }
   };
 
-  // 8. Get user profile
+  // ============= GET PROFILE =============
   const getProfile = async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) return { success: false, error: 'No token found' };
+      const response = await api.get('/auth/profile');
       
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/profile`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        setUser(data.data.user);
-        return { success: true, user: data.data.user };
+      if (response.data.success) {
+        setUser(response.data.data);
+        localStorage.setItem('user', JSON.stringify(response.data.data));
+        return { success: true, user: response.data.data };
       } else {
-        if (data.error?.includes('Invalid token')) {
-          logout();
-        }
-        return { success: false, error: data.error };
+        return { success: false, error: response.data.error };
       }
     } catch (error) {
       console.error('Get profile error:', error);
-      return { success: false, error: 'Network error' };
+      if (error.response?.status === 401) {
+        logout();
+      }
+      return { success: false, error: 'Failed to fetch profile' };
     }
   };
 
-  // 9. Update profile
+  // ============= UPDATE PROFILE =============
   const updateProfile = async (profileData) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/profile`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(profileData),
+      const response = await api.put('/auth/profile', {
+        name: profileData.name,
+        phone: profileData.phone
       });
       
-      const data = await response.json();
-      
-      if (data.success) {
-        setUser(data.data.user);
-        return { success: true, message: data.message, user: data.data.user };
+      if (response.data.success) {
+        setUser(response.data.data);
+        localStorage.setItem('user', JSON.stringify(response.data.data));
+        return { success: true, message: response.data.message, user: response.data.data };
       } else {
-        return { success: false, error: data.error };
+        return { success: false, error: response.data.error };
       }
     } catch (error) {
       console.error('Update profile error:', error);
-      return { success: false, error: 'Network error' };
+      return { success: false, error: error.response?.data?.error || 'Failed to update profile' };
     }
   };
 
-  // 10. Change password
-  const changePassword = async (passwordData) => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/change-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(passwordData),
-      });
-      
-      const data = await response.json();
-      
-      return {
-        success: data.success,
-        message: data.message || data.error
-      };
-    } catch (error) {
-      console.error('Change password error:', error);
-      return { success: false, error: 'Network error' };
-    }
-  };
-
-  // Helper functions
+  // ============= HELPER FUNCTIONS =============
   const hasRole = (role) => user?.role === role;
   const hasAnyRole = (roles) => roles.includes(user?.role);
 
@@ -379,31 +253,30 @@ const login = async (credentials) => {
     loading,
     authChecked,
     
-    // Authentication functions
-    checkEmailRegistration,
-    completeRegistration,
-    login,
+    // Auth functions
     adminSignup,
+    login,
+    changePassword,
     forgotPassword,
     resetPassword,
     logout,
     getProfile,
     updateProfile,
-    changePassword,
     
-    // Role helpers
+    // Role checks
     isAuthenticated: !!user,
     isAdmin: hasRole('admin'),
     isTeacher: hasRole('teacher'),
     isStudent: hasRole('student'),
     isParent: hasRole('parent'),
+    isPrincipal: hasRole('principal'),
     
-    // Authorization helpers
+    // Helpers
     hasRole,
     hasAnyRole,
     
-    // Quick access to user info
-    userId: user?._id,
+    // User info shortcuts
+    userId: user?.id,
     userName: user?.name,
     userEmail: user?.email,
     userRole: user?.role,

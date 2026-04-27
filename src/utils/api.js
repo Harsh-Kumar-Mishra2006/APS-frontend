@@ -1,10 +1,11 @@
-// src/utils/api.js - RECOMMENDED VERSION
+// src/utils/api.js
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aps-backend-8aho.onrender.com/';
+// Change this to your local backend URL
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 
 const api = axios.create({
-  baseURL: API_BASE_URL,  // Just the base URL
+  baseURL: API_BASE_URL,
   timeout: 30000,
   withCredentials: true,
   headers: {
@@ -12,20 +13,19 @@ const api = axios.create({
   }
 });
 
-// Add request interceptor
+// Request interceptor
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     
-    // Add '/api' prefix to all requests automatically
-    if (!config.url.startsWith('/api/')) {
+    // Don't add /api if it's already there or if it's a full URL
+    if (!config.url.startsWith('/api/') && !config.url.startsWith('http')) {
       config.url = '/api/' + config.url;
     }
     
     console.log('🌐 API Request:', {
       url: config.url,
       method: config.method,
-      fullURL: config.baseURL + config.url,
       hasToken: !!token,
     });
     
@@ -35,23 +35,20 @@ api.interceptors.request.use(
     
     return config;
   },
-  (error) => {
-    console.error('❌ Request Interceptor Error:', error);
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Add response interceptor
+// Response interceptor
 api.interceptors.response.use(
   (response) => {
-    console.log('✅ API Response Success:', {
+    console.log('✅ API Response:', {
       url: response.config.url,
       status: response.status,
     });
     return response;
   },
   (error) => {
-    console.error('❌ API Response Error:', {
+    console.error('❌ API Error:', {
       url: error.config?.url,
       status: error.response?.status,
       data: error.response?.data,
@@ -60,10 +57,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      
-      if (!window.location.pathname.includes('/add-members')) {
-        window.location.href = '/add-members';
-      }
+      window.location.href = '/login';
     }
     
     return Promise.reject(error);
