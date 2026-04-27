@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 // Change this to your local backend URL
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://schoolapp-backend2.onrender.com';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
