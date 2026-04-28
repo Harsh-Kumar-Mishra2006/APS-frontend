@@ -7,7 +7,6 @@ import {
   CheckCircle, 
   AlertCircle, 
   Search,
-  ChalkboardUser
 } from 'lucide-react';
 
 const TeacherAttendanceForm = () => {

@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }) => {
   // ============= ADMIN SIGNUP (First admin creates account) =============
   const adminSignup = async (adminData) => {
     try {
-      const response = await api.post('/auth/admin/signup', {
+      const response = await api.post('auth/admin/signup', {
         name: adminData.name,
         email: adminData.email,
         username: adminData.username,

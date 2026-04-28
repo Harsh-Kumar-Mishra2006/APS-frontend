@@ -54,10 +54,10 @@ const Navbar = () => {
   // Admin-only navigation items
   const adminNavigationItems = [
     { name: 'Add Members', href: '/add-members', icon: Users , minWidth: 'lg', role: 'admin' },
-    { name: 'Add Data', href: '/add-data', icon: FileText, minWidth: 'lg', role: 'admin' },
     { name: 'View Data', href: '/student-data', icon: FileText, minWidth: 'lg', role: 'student' },
     { name: 'View Data', href: '/parent-data', icon: FileText, minWidth: 'lg', role: 'parent' },
     { name: 'View Data', href: '/teacher-data', icon: FileText, minWidth: 'lg', role: 'teacher' },
+    { name: 'Add Attendance', href: '/add-attendance', icon: FileText, minWidth: 'lg', role: 'admin'}
   ];
 
   // Get all navigation items based on role

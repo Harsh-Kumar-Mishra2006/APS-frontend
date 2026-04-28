@@ -1,10 +1,10 @@
 // src/pages/Attendance.jsx
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import StudentAttendanceForm from '../components/attendance/StudentAttendanceForm';
-import TeacherAttendanceForm from '../components/attendance/TeacherAttendanceForm';
-import DailyAttendanceMarking from '../components/attendance/DailyAttendanceMarking';
-import ViewAttendance from '../components/attendance/ViewAttendance';
+import { useAuth } from '../../context/AuthContext';
+import StudentAttendanceForm from '../../components/Attendance/StudentAttendanceForm';
+import TeacherAttendanceForm from '../../components/Attendance/TeacherAttendanceForm';
+import DailyAttendanceMarking from '../../components/Attendance/DailyAttendanceMarking';
+import ViewAttendance from '../../components/Attendance/viewAttendance';
 import { 
   Calendar, 
   Users, 
@@ -12,7 +12,6 @@ import {
   Clock, 
   BarChart3,
   GraduationCap,
-  ChalkboardUser
 } from 'lucide-react';
 
 const Attendance = () => {

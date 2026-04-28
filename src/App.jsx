@@ -18,6 +18,7 @@ import AddMembers from './pages/AddMembers/AddMembers'
 import StudentDashboard from './pages/student/StudentDashboard'
 import ParentDashboard from './pages/Parent/ParentDashboard'
 import TeacherDashboard from './pages/teacher/TeacherDashboard'
+import Attendance from './pages/Attendance/AddAttendance'
 
 const App = () => {
   return (
@@ -36,6 +37,7 @@ const App = () => {
               <Route path='/student-data' element={<StudentData/>}/>
               <Route path='/parent-data' element={<ParentData/>}/>
               <Route path='/teacher-data' element={<TeacherData/>}/>
+              <Route path='/add-attendance' element={<Attendance/>}/>
               <Route path='/student-dashboard' element={<StudentDashboard/>}/>
               <Route path='/parent-dashboard' element={<ParentDashboard/>}/>
               <Route path='/teacher-dashboard' element={<TeacherDashboard/>}/> 
@@ -50,7 +52,7 @@ const App = () => {
               element={
                 <ContactPage/>
               } />
-              <Route path="/gallery" element={<UserCard/>}>
+              <Route path="/gallery" element={<AdmissionPage/>}>
               </Route>
             </Routes>
           </main>
