@@ -1,14 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import api from '../../utils/api';
-import { Save, Loader, CheckCircle, AlertCircle, Search, GraduationCap } from 'lucide-react';
+import { Save, Loader, CheckCircle, AlertCircle, GraduationCap, Mail } from 'lucide-react';
 
 const StudentAttendanceForm = () => {
-  const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [students, setStudents] = useState([]);
-  const [selectedStudentId, setSelectedStudentId] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState({
+    email: '',
     month: new Date().toLocaleString('default', { month: 'long' }),
     year: new Date().getFullYear(),
     totalWorkingDays: 0,
@@ -17,38 +14,25 @@ const StudentAttendanceForm = () => {
   });
   const [message, setMessage] = useState({ type: '', text: '' });
 
-  useEffect(() => {
-    fetchStudents();
-  }, []);
-
-  const fetchStudents = async () => {
-    setLoading(true);
-    try {
-      // ✅ Fixed API endpoint
-      const response = await api.get('auth/users?role=student');
-      if (response.data.success) {
-        setStudents(response.data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching students:', error);
-      setMessage({ type: 'error', text: 'Failed to fetch students' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+    setMessage({ type: '', text: '' });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!selectedStudentId) {
-      setMessage({ type: 'error', text: 'Please select a student' });
+    // Validation
+    if (!formData.email) {
+      setMessage({ type: 'error', text: 'Please enter student email' });
+      return;
+    }
+
+    if (!formData.email.includes('@')) {
+      setMessage({ type: 'error', text: 'Please enter a valid email address' });
       return;
     }
 
@@ -66,9 +50,8 @@ const StudentAttendanceForm = () => {
     setMessage({ type: '', text: '' });
 
     try {
-      // ✅ Fixed: Send student_id as the database expects
-      const response = await api.post('attendance/student/add', {
-        studentId: parseInt(selectedStudentId), // Send as studentId, backend maps to student_id
+      const response = await api.post('attendance/student/add-by-email', {
+        email: formData.email,
         month: formData.month,
         year: parseInt(formData.year),
         totalWorkingDays: parseInt(formData.totalWorkingDays),
@@ -78,32 +61,25 @@ const StudentAttendanceForm = () => {
 
       if (response.data.success) {
         setMessage({ type: 'success', text: response.data.message });
-        setSelectedStudentId('');
         setFormData({
+          email: '',
           month: new Date().toLocaleString('default', { month: 'long' }),
           year: new Date().getFullYear(),
           totalWorkingDays: 0,
           daysPresent: 0,
           remark: ''
         });
-        // Refresh student list to show updated data
-        fetchStudents();
       }
     } catch (error) {
       setMessage({ 
         type: 'error', 
-        text: error.response?.data?.error || 'Failed to add attendance' 
+        text: error.response?.data?.error || 'Failed to add attendance. Student email not found.' 
       });
     } finally {
       setSubmitting(false);
       setTimeout(() => setMessage({ type: '', text: '' }), 3000);
     }
   };
-
-  const filteredStudents = students.filter(student =>
-    student.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.student?.rollNumber?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const months = ['January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'];
@@ -118,7 +94,7 @@ const StudentAttendanceForm = () => {
         </div>
         <div>
           <h2 className="text-2xl font-bold text-gray-800">Add Student Monthly Attendance</h2>
-          <p className="text-gray-600">Record monthly attendance summary for students</p>
+          <p className="text-gray-600">Enter student email and attendance details</p>
         </div>
       </div>
 
@@ -132,32 +108,24 @@ const StudentAttendanceForm = () => {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Email Input - Only field needed to identify student */}
         <div>
-          <label className="block text-gray-700 font-medium mb-2">Select Student *</label>
+          <label className="block text-gray-700 font-medium mb-2">
+            Student Email Address <span className="text-red-500">*</span>
+          </label>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
-              type="text"
-              placeholder="Search by name or roll number..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="student@school.com"
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              required
             />
           </div>
-          
-          <select
-            value={selectedStudentId}
-            onChange={(e) => setSelectedStudentId(e.target.value)}
-            className="mt-2 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            size="5"
-          >
-            <option value="">-- Select a Student --</option>
-            {filteredStudents.map(student => (
-              <option key={student.id} value={student.student?.id || student.id}>
-                {student.name} - {student.student?.rollNumber || 'N/A'} ({student.student?.class || 'N/A'} {student.student?.section || ''})
-              </option>
-            ))}
-          </select>
+          <p className="text-xs text-gray-500 mt-1">Enter the student's registered email address</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -197,16 +165,18 @@ const StudentAttendanceForm = () => {
           </div>
         </div>
 
-        <button type="submit" disabled={submitting || !selectedStudentId}
+        <button type="submit" disabled={submitting || !formData.email}
           className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50 flex items-center justify-center gap-2">
           {submitting ? <Loader className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
           Save Attendance Record
         </button>
       </form>
 
-      {selectedStudentId && formData.totalWorkingDays > 0 && (
+      {/* Preview Section */}
+      {formData.email && formData.totalWorkingDays > 0 && (
         <div className="mt-6 p-4 bg-gray-50 rounded-lg">
           <h3 className="font-semibold text-gray-700 mb-2">Attendance Preview:</h3>
+          <p className="text-sm text-gray-600">Student Email: {formData.email}</p>
           <p className="text-sm text-gray-600">Percentage: {((formData.daysPresent / formData.totalWorkingDays) * 100).toFixed(2)}%</p>
           <p className="text-sm text-gray-600">Days Absent: {formData.totalWorkingDays - formData.daysPresent}</p>
         </div>
