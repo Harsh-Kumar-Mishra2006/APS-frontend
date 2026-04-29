@@ -61,7 +61,6 @@ const Attendance = () => {
   }
 
   const tabs = [
-    { id: 'daily', label: 'Daily Attendance', icon: Clock, show: canManageAttendance },
     { id: 'monthly-student', label: 'Add Student Monthly', icon: GraduationCap, show: user?.role === 'admin' },
     { id: 'monthly-teacher', label: 'Add Teacher Monthly', icon: BookOpen, show: user?.role === 'admin' },
     { id: 'view', label: 'View Attendance', icon: BarChart3, show: true }

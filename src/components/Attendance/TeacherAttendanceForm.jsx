@@ -33,7 +33,7 @@ const TeacherAttendanceForm = () => {
   const fetchTeachers = async () => {
     setLoading(true);
     try {
-      const response = await api.get('/users', { params: { role: 'teacher' } });
+      const response = await api.get('auth/users?role=teacher');
       if (response.data.success) {
         setTeachers(response.data.data);
       }
@@ -74,8 +74,8 @@ const TeacherAttendanceForm = () => {
     setMessage({ type: '', text: '' });
 
     try {
-      const response = await api.post('/attendance/teacher/add', {
-        teacherId: selectedTeacher,
+      const response = await api.post('attendance/teacher/add', {
+        teacherId: parseInt(selectedTeacher),
         month: formData.month,
         year: formData.year,
         totalWorkingDays: parseInt(formData.totalWorkingDays),

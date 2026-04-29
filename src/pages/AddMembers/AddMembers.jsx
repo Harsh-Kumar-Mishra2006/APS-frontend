@@ -1,9 +1,9 @@
 // src/pages/AddMembers.jsx
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import AddStudentForm from '../../components/form/AddStudentForm';
+import AddStudentForm from '../../components/form/addStudentForm';
 import AddTeacherForm from '../../components/form/AddTeacherForm';
-import AddParentForm from '../../components/form/AddParentForm';
+import AddParentForm from '../../components/form/addParentForm';
 import { UserPlus, BookOpen, GraduationCap, Users, X, CheckCircle, Loader } from 'lucide-react';
 import ViewTeachers from '../../components/view/ViewTeachers';
 import ViewStudents from '../../components/view/ViewStudents';
