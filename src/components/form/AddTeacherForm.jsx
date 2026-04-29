@@ -47,7 +47,7 @@ const AddTeacherForm = ({ onSuccess, onCancel }) => {
     setError('');
 
     try {
-      const response = await api.post('/auth/add-teacher', formData);
+      const response = await api.post('auth/add-teacher', formData);
       
       if (response.data.success) {
         onSuccess(

@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const token = localStorage.getItem('token');
       if (token) {
-        const response = await api.get('/auth/verify');
+        const response = await api.get('auth/verify');
         
         if (response.data.success && response.data.data.valid) {
           setUser(response.data.data.user);
@@ -83,43 +83,64 @@ export const AuthProvider = ({ children }) => {
   };
 
   // ============= LOGIN (For all users: admin, teacher, student, parent) =============
-  const login = async (credentials) => {
-    try {
-      const response = await api.post('/auth/login', {
-        email: credentials.email,
-        password: credentials.password
-      });
+  // ============= LOGIN (For all users: admin, teacher, student, parent) =============
+const login = async (credentials) => {
+  try {
+    console.log('Attempting login with:', credentials.email); // Debug log
+    
+    const response = await api.post('auth/login', {
+      email: credentials.email,
+      password: credentials.password
+    });
+    
+    console.log('Login response:', response.data); // Debug log
+    
+    if (response.data.success) {
+      const userData = response.data.data.user;
+      const token = response.data.data.token;
       
-      if (response.data.success) {
-        localStorage.setItem('token', response.data.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.data.user));
-        setUser(response.data.data.user);
-        
-        return { 
-          success: true, 
-          message: response.data.message,
-          user: response.data.data.user,
-          needsPasswordChange: response.data.data.needsPasswordChange
-        };
-      } else {
+      if (!userData || !userData.role) {
+        console.error('Invalid user data received:', userData);
         return { 
           success: false, 
-          error: response.data.error || 'Login failed'
+          error: 'Invalid user data received from server'
         };
       }
-    } catch (error) {
-      console.error('Login error:', error);
+      
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(userData));
+      setUser(userData);
+      
+      return { 
+        success: true, 
+        message: response.data.message,
+        user: userData,
+        needsPasswordChange: response.data.data.needsPasswordChange || false
+      };
+    } else {
       return { 
         success: false, 
-        error: error.response?.data?.error || 'Network error. Please try again.'
+        error: response.data.error || 'Login failed'
       };
     }
-  };
+  } catch (error) {
+    console.error('Login error details:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status
+    });
+    
+    return { 
+      success: false, 
+      error: error.response?.data?.error || 'Network error. Please check your connection and try again.'
+    };
+  }
+};
 
   // ============= CHANGE PASSWORD (First login or voluntary) =============
   const changePassword = async (passwordData) => {
     try {
-      const response = await api.post('/auth/change-password', {
+      const response = await api.post('auth/change-password', {
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword
       });
@@ -151,7 +172,7 @@ export const AuthProvider = ({ children }) => {
   // ============= FORGOT PASSWORD =============
   const forgotPassword = async (email) => {
     try {
-      const response = await api.post('/auth/forgot-password', { email });
+      const response = await api.post('auth/forgot-password', { email });
       
       return {
         success: response.data.success,
@@ -170,7 +191,7 @@ export const AuthProvider = ({ children }) => {
   // ============= RESET PASSWORD =============
   const resetPassword = async (resetData) => {
     try {
-      const response = await api.post('/auth/reset-password', {
+      const response = await api.post('auth/reset-password', {
         token: resetData.token,
         newPassword: resetData.newPassword
       });
@@ -191,7 +212,7 @@ export const AuthProvider = ({ children }) => {
   // ============= LOGOUT =============
   const logout = async () => {
     try {
-      await api.post('/auth/logout');
+      await api.post('auth/logout');
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -204,7 +225,7 @@ export const AuthProvider = ({ children }) => {
   // ============= GET PROFILE =============
   const getProfile = async () => {
     try {
-      const response = await api.get('/auth/profile');
+      const response = await api.get('auth/profile');
       
       if (response.data.success) {
         setUser(response.data.data);
@@ -225,7 +246,7 @@ export const AuthProvider = ({ children }) => {
   // ============= UPDATE PROFILE =============
   const updateProfile = async (profileData) => {
     try {
-      const response = await api.put('/auth/profile', {
+      const response = await api.put('auth/profile', {
         name: profileData.name,
         phone: profileData.phone
       });

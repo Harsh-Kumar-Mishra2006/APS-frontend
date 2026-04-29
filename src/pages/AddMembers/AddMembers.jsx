@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import AddStudentForm from '../../components/form/addStudentForm';
 import AddTeacherForm from '../../components/form/AddTeacherForm';
 import AddParentForm from '../../components/form/addParentForm';
-import { UserPlus, GraduationCap, Users, X, CheckCircle } from 'lucide-react';
+import { UserPlus,BookOpen, GraduationCap, Users, X, CheckCircle } from 'lucide-react';
 
 const AddMembers = () => {
   const { user } = useAuth();
@@ -120,10 +120,11 @@ const AddMembers = () => {
               className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-6 text-left group"
             >
               <div className="flex items-center justify-center mb-4">
-                <div className="p-3 bg-green-100 rounded-full group-hover:bg-green-200 transition-colors">
-                  <ChalkboardUser className="w-12 h-12 text-green-600" />
+                <div className="p-3 bg-blue-100 rounded-full group-hover:bg-blue-200 transition-colors">
+                  <BookOpen className="w-12 h-12 text-blue-600" />
                 </div>
               </div>
+              
               <h3 className="text-xl font-bold text-gray-800 text-center mb-2">Add Teacher</h3>
               <p className="text-gray-600 text-center text-sm">
                 Register new teachers with their qualifications, specialization, and professional details
@@ -143,7 +144,7 @@ const AddMembers = () => {
             >
               <div className="flex items-center justify-center mb-4">
                 <div className="p-3 bg-purple-100 rounded-full group-hover:bg-purple-200 transition-colors">
-                  <Users className="w-12 h-12 text-purple-600" />
+                  <Users className="w-12 h-12 text-cyan-600" />
                 </div>
               </div>
               <h3 className="text-xl font-bold text-gray-800 text-center mb-2">Add Parent</h3>

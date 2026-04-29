@@ -63,7 +63,7 @@ const AddParentForm = ({ onSuccess, onCancel }) => {
     setError('');
 
     try {
-      const response = await api.post('/auth/add-parent', formData);
+      const response = await api.post('auth/add-parent', formData);
       
       if (response.data.success) {
         onSuccess(

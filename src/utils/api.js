@@ -17,22 +17,24 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
-    
-    // Don't add /api if it's already there or if it's a full URL
+
     if (!config.url.startsWith('/api/') && !config.url.startsWith('http')) {
       config.url = '/api/' + config.url;
     }
-    
+
+    // ✅ Remove double slashes (fixes /api//endpoint)
+    config.url = config.url.replace(/\/\//g, '/');
+
     console.log('🌐 API Request:', {
       url: config.url,
       method: config.method,
       hasToken: !!token,
     });
-    
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
     return config;
   },
   (error) => Promise.reject(error)

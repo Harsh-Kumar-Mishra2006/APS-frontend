@@ -1,4 +1,4 @@
-// src/pages/Login.jsx (Enhanced Version with Framer Motion)
+// src/pages/Login.jsx (Fixed Version)
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -93,35 +93,65 @@ const Login = () => {
     }
     
     setLoading(true);
+    setError('');
     
-    const result = await login({
-      email: formData.email,
-      password: formData.password
-    });
-    
-    if (result.success) {
-      if (result.user?.role !== selectedRole) {
-        setError(`Invalid role selection. This account is registered as ${result.user?.role}. Please select the correct role.`);
-        setLoading(false);
-        return;
-      }
+    try {
+      const result = await login({
+        email: formData.email,
+        password: formData.password
+      });
       
-      if (result.needsPasswordChange) {
-        navigate('/change-password');
-      } else {
-        switch (result.user?.role) {
-          case 'admin': navigate('/admin/dashboard'); break;
-          case 'teacher': navigate('/teacher/dashboard'); break;
-          case 'student': navigate('/student/dashboard'); break;
-          case 'parent': navigate('/parent/dashboard'); break;
-          default: navigate('/dashboard');
+      console.log('Login result:', result); // Debug log
+      
+      if (result.success) {
+        // Check if user exists and role matches
+        if (!result.user) {
+          setError('User data not found. Please try again.');
+          setLoading(false);
+          return;
         }
+        
+        // Convert both to lowercase for case-insensitive comparison
+        const userRole = result.user.role?.toLowerCase();
+        const selectedRoleId = selectedRole.toLowerCase();
+        
+        if (userRole !== selectedRoleId) {
+          setError(`Invalid role selection! This account is registered as ${result.user.role}. Please select the correct role.`);
+          setLoading(false);
+          return;
+        }
+        
+        // Role matches, proceed with navigation
+        if (result.needsPasswordChange) {
+          navigate('/change-password');
+        } else {
+          // Navigate based on role
+          switch (result.user.role) {
+            case 'admin':
+              navigate('/');
+              break;
+            case 'teacher':
+              navigate('/');
+              break;
+            case 'student':
+              navigate('/');
+              break;
+            case 'parent':
+              navigate('/');
+              break;
+            default:
+              navigate('/');
+          }
+        }
+      } else {
+        setError(result.error || 'Login failed. Please check your credentials.');
       }
-    } else {
-      setError(result.error);
+    } catch (err) {
+      console.error('Login error in component:', err);
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   const selectedRoleData = roles.find(r => r.id === selectedRole);
