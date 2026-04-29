@@ -1,19 +1,40 @@
 // src/pages/AddMembers.jsx
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import AddStudentForm from '../../components/form/addStudentForm';
+import AddStudentForm from '../../components/form/AddStudentForm';
 import AddTeacherForm from '../../components/form/AddTeacherForm';
-import AddParentForm from '../../components/form/addParentForm';
-import { UserPlus,BookOpen, GraduationCap, Users, X, CheckCircle } from 'lucide-react';
+import AddParentForm from '../../components/form/AddParentForm';
+import { UserPlus, BookOpen, GraduationCap, Users, X, CheckCircle, Loader } from 'lucide-react';
+import ViewTeachers from '../../components/view/ViewTeachers';
+import ViewStudents from '../../components/view/ViewStudents';
+import ViewParents from '../../components/view/ViewParents';
+import { Eye, Users as UsersIcon, BookOpen as BookOpenIcon, GraduationCap as GraduationCapIcon } from 'lucide-react';
 
 const AddMembers = () => {
-  const { user } = useAuth();
-  const [activeForm, setActiveForm] = useState(null); // 'student', 'teacher', 'parent'
+  const { user, loading, authChecked } = useAuth(); // ← Add loading and authChecked
+  const [activeForm, setActiveForm] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [generatedPassword, setGeneratedPassword] = useState('');
+  // Add state for view modals inside AddMembers component
+const [showViewTeachers, setShowViewTeachers] = useState(false);
+const [showViewStudents, setShowViewStudents] = useState(false);
+const [showViewParents, setShowViewParents] = useState(false);
 
-  // Check if user is admin
+
+  // ✅ Show loading while checking auth
+  if (loading || !authChecked) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Checking authorization...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if user is admin after auth is complete
   if (!user || user.role !== 'admin') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -26,13 +47,13 @@ const AddMembers = () => {
     );
   }
 
+  // Rest of your component remains the same...
   const handleSuccess = (message, password) => {
     setSuccessMessage(message);
     setGeneratedPassword(password);
     setShowSuccess(true);
     setActiveForm(null);
     
-    // Auto hide success message after 5 seconds
     setTimeout(() => {
       setShowSuccess(false);
     }, 5000);
@@ -89,7 +110,7 @@ const AddMembers = () => {
           </div>
         )}
 
-        {/* Selection Cards - Show when no form is active */}
+        {/* Selection Cards */}
         {!activeForm && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Add Student Card */}
@@ -124,7 +145,6 @@ const AddMembers = () => {
                   <BookOpen className="w-12 h-12 text-blue-600" />
                 </div>
               </div>
-              
               <h3 className="text-xl font-bold text-gray-800 text-center mb-2">Add Teacher</h3>
               <p className="text-gray-600 text-center text-sm">
                 Register new teachers with their qualifications, specialization, and professional details
@@ -161,6 +181,107 @@ const AddMembers = () => {
           </div>
         )}
 
+        {/* View Data Section */}
+{!activeForm && (
+  <>
+    <div className="mt-12">
+      <h2 className="text-2xl font-bold text-gray-800 text-center mb-6">📊 View Member Data</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* View Students Card */}
+        <button
+          onClick={() => setShowViewStudents(true)}
+          className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-6 text-left group"
+        >
+          <div className="flex items-center justify-center mb-4">
+            <div className="p-3 bg-blue-200 rounded-full group-hover:bg-blue-300 transition-colors">
+              <GraduationCapIcon className="w-12 h-12 text-blue-700" />
+            </div>
+          </div>
+          <h3 className="text-xl font-bold text-gray-800 text-center mb-2">View Students</h3>
+          <p className="text-gray-600 text-center text-sm">
+            View all students with their login credentials, academic details, and parent information
+          </p>
+          <div className="mt-4 flex justify-center">
+            <span className="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-sm rounded-full">
+              <Eye className="w-4 h-4 mr-1" />
+              View Students
+            </span>
+          </div>
+        </button>
+
+        {/* View Teachers Card */}
+        <button
+          onClick={() => setShowViewTeachers(true)}
+          className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-6 text-left group"
+        >
+          <div className="flex items-center justify-center mb-4">
+            <div className="p-3 bg-green-200 rounded-full group-hover:bg-green-300 transition-colors">
+              <BookOpenIcon className="w-12 h-12 text-green-700" />
+            </div>
+          </div>
+          <h3 className="text-xl font-bold text-gray-800 text-center mb-2">View Teachers</h3>
+          <p className="text-gray-600 text-center text-sm">
+            View all teachers with their login credentials, qualifications, and professional details
+          </p>
+          <div className="mt-4 flex justify-center">
+            <span className="inline-flex items-center px-3 py-1 bg-green-600 text-white text-sm rounded-full">
+              <Eye className="w-4 h-4 mr-1" />
+              View Teachers
+            </span>
+          </div>
+        </button>
+
+        {/* View Parents Card */}
+        <button
+          onClick={() => setShowViewParents(true)}
+          className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-6 text-left group"
+        >
+          <div className="flex items-center justify-center mb-4">
+            <div className="p-3 bg-purple-200 rounded-full group-hover:bg-purple-300 transition-colors">
+              <UsersIcon className="w-12 h-12 text-purple-700" />
+            </div>
+          </div>
+          <h3 className="text-xl font-bold text-gray-800 text-center mb-2">View Parents</h3>
+          <p className="text-gray-600 text-center text-sm">
+            View all parents/guardians with their login credentials and linked children
+          </p>
+          <div className="mt-4 flex justify-center">
+            <span className="inline-flex items-center px-3 py-1 bg-purple-600 text-white text-sm rounded-full">
+              <Eye className="w-4 h-4 mr-1" />
+              View Parents
+            </span>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    {/* View Modals */}
+    {showViewStudents && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div className="max-w-6xl w-full">
+          <ViewStudents onClose={() => setShowViewStudents(false)} />
+        </div>
+      </div>
+    )}
+
+    {showViewTeachers && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div className="max-w-6xl w-full">
+          <ViewTeachers onClose={() => setShowViewTeachers(false)} />
+        </div>
+      </div>
+    )}
+
+    {showViewParents && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div className="max-w-6xl w-full">
+          <ViewParents onClose={() => setShowViewParents(false)} />
+        </div>
+      </div>
+    )}
+  </>
+)}
+
         {/* Active Form */}
         {activeForm && (
           <div className="mt-8">
@@ -169,7 +290,7 @@ const AddMembers = () => {
         )}
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes slideIn {
           from {
             transform: translateX(100%);

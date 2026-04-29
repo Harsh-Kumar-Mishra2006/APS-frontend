@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import StudentAttendanceForm from '../../components/Attendance/StudentAttendanceForm';
 import TeacherAttendanceForm from '../../components/Attendance/TeacherAttendanceForm';
-import DailyAttendanceMarking from '../../components/Attendance/DailyAttendanceMarking';
 import ViewAttendance from '../../components/Attendance/viewAttendance';
 import { 
   Calendar, 
@@ -12,15 +11,42 @@ import {
   Clock, 
   BarChart3,
   GraduationCap,
+  BookOpen,
+  Loader
 } from 'lucide-react';
 
 const Attendance = () => {
-  const { user } = useAuth();
+  const { user, loading, authChecked } = useAuth();
   const [activeTab, setActiveTab] = useState('daily'); // daily, monthly-student, monthly-teacher, view
 
   // Check permissions
   const canManageAttendance = user?.role === 'admin' || user?.role === 'teacher';
   const canViewOwnAttendance = user?.role === 'student' || user?.role === 'teacher' || user?.role === 'parent';
+
+  // ✅ Show loading while checking auth
+    if (loading || !authChecked) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <Loader className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+            <p className="text-gray-600">Checking authorization...</p>
+          </div>
+        </div>
+      );
+    }
+  
+    // Check if user is admin after auth is complete
+    if (!user || user.role !== 'admin') {
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg shadow-xl p-8 text-center">
+            <div className="text-red-500 text-6xl mb-4">⚠️</div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Access Denied</h2>
+            <p className="text-gray-600">Only administrators can access this page.</p>
+          </div>
+        </div>
+      );
+    }
 
   if (!canManageAttendance && !canViewOwnAttendance) {
     return (
@@ -37,7 +63,7 @@ const Attendance = () => {
   const tabs = [
     { id: 'daily', label: 'Daily Attendance', icon: Clock, show: canManageAttendance },
     { id: 'monthly-student', label: 'Add Student Monthly', icon: GraduationCap, show: user?.role === 'admin' },
-    { id: 'monthly-teacher', label: 'Add Teacher Monthly', icon: ChalkboardUser, show: user?.role === 'admin' },
+    { id: 'monthly-teacher', label: 'Add Teacher Monthly', icon: BookOpen, show: user?.role === 'admin' },
     { id: 'view', label: 'View Attendance', icon: BarChart3, show: true }
   ];
 
@@ -90,10 +116,6 @@ const Attendance = () => {
 
         {/* Content */}
         <div className="mt-6">
-          {activeTab === 'daily' && canManageAttendance && (
-            <DailyAttendanceMarking />
-          )}
-          
           {activeTab === 'monthly-student' && user?.role === 'admin' && (
             <StudentAttendanceForm />
           )}
