@@ -23,29 +23,33 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const checkAuth = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (token) {
-        const response = await api.get('auth/verify');
-        
-        if (response.data.success && response.data.data.valid) {
-          setUser(response.data.data.user);
-        } else {
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          setUser(null);
-        }
+  try {
+    const token = localStorage.getItem('token');
+    if (token) {
+      const response = await api.get('auth/verify');
+      
+      if (response.data.success && response.data.data.valid) {
+        setUser(response.data.data.user);
+      } else {
+        // Invalid token - clear storage
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setUser(null);
       }
-    } catch (error) {
-      console.error('Auth check failed:', error);
+    }
+  } catch (error) {
+    console.error('Auth check failed:', error);
+    // Only clear storage for 401 errors
+    if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       setUser(null);
-    } finally {
-      setLoading(false);
-      setAuthChecked(true);
     }
-  };
+  } finally {
+    setLoading(false);
+    setAuthChecked(true);
+  }
+};
 
   // ============= ADMIN SIGNUP (First admin creates account) =============
   const adminSignup = async (adminData) => {

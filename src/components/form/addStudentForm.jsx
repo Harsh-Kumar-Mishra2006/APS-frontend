@@ -19,7 +19,7 @@ const AddStudentForm = ({ onSuccess, onCancel }) => {
     motherName: '',
     address: '',
     dateOfBirth: '',
-    gender: ''
+    gender: '',
   });
   const [error, setError] = useState('');
 
@@ -173,6 +173,7 @@ const AddStudentForm = ({ onSuccess, onCancel }) => {
               <option value="other">Other</option>
             </select>
           </div>
+
 
           {/* Academic Information */}
           <div className="col-span-2">
