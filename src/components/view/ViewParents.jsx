@@ -86,12 +86,12 @@ const ViewParents = ({ onClose }) => {
                     <div className="flex items-center gap-2">
                       <Key className="w-4 h-4 text-gray-400" />
                       <span className="text-sm font-mono">
-                        {showPasswords[parent.id] ? parent.tempPassword || 'temp123456' : '••••••••'}
+                        {showPasswords[parent.id] ? parent.temporaryPassword  : '.......' }
                       </span>
                       <button onClick={() => togglePassword(parent.id)}>
                         {showPasswords[parent.id] ? <EyeOff className="w-4 h-4 text-gray-400" /> : <Eye className="w-4 h-4 text-gray-400" />}
                       </button>
-                      <button onClick={() => copyToClipboard(parent.tempPassword || 'temp123456', `pass-${parent.id}`)}>
+                      <button onClick={() => copyToClipboard(parent.temporaryPassword  || 'temp123456', `pass-${parent.id}`)}>
                         {copiedId === `pass-${parent.id}` ? <CheckCircle className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-gray-400" />}
                       </button>
                     </div>

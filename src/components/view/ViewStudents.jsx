@@ -87,12 +87,12 @@ const ViewStudents = ({ onClose }) => {
                     <div className="flex items-center gap-2">
                       <Key className="w-4 h-4 text-gray-400" />
                       <span className="text-sm font-mono">
-                        {showPasswords[student.id] ? student.tempPassword || 'temp123456' : '••••••••'}
+                        {showPasswords[student.id] ? student.temporaryPassword  : '.......' }
                       </span>
                       <button onClick={() => togglePassword(student.id)}>
                         {showPasswords[student.id] ? <EyeOff className="w-4 h-4 text-gray-400" /> : <Eye className="w-4 h-4 text-gray-400" />}
                       </button>
-                      <button onClick={() => copyToClipboard(student.tempPassword || 'temp123456', `pass-${student.id}`)}>
+                      <button onClick={() => copyToClipboard(student.temporaryPassword  || 'temp123456', `pass-${student.id}`)}>
                         {copiedId === `pass-${student.id}` ? <CheckCircle className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-gray-400" />}
                       </button>
                     </div>
