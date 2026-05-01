@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import { FileText, Plus, Eye, Loader, X, CheckCircle, GraduationCap, Users } from 'lucide-react';
-import AddResultForm from '../components/forms/AddResultForm';
-import ViewResults from '../components/view/ViewResults';
-import CreateExamForm from '../components/forms/CreateExamForm';
+import AddResultForm from '../../components/form/AddResultForm';
+import ViewResults from '../../components/view/ViewResults';
+import CreateExamForm from '../../components/form/CreateExamForm';
 
 const ResultManagement = () => {
   const { user, loading, authChecked } = useAuth();

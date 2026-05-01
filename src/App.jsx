@@ -19,6 +19,8 @@ import StudentDashboard from './pages/student/StudentDashboard'
 import ParentDashboard from './pages/Parent/ParentDashboard'
 import TeacherDashboard from './pages/teacher/TeacherDashboard'
 import Attendance from './pages/Attendance/AddAttendance'
+import FeeManagement from './pages/fee/FeeManagement'
+import ResultManagement from './pages/result/ResultManagement'
 
 const App = () => {
   return (
@@ -41,6 +43,8 @@ const App = () => {
               <Route path='/student-dashboard' element={<StudentDashboard/>}/>
               <Route path='/parent-dashboard' element={<ParentDashboard/>}/>
               <Route path='/teacher-dashboard' element={<TeacherDashboard/>}/> 
+              <Route path='./fee-management' element={<FeeManagement/>}/>
+              <Route path='./result-management' element={<ResultManagement/>}/>
               {/* Add more routes as needed */}
               <Route path="/about" element={
                 <AboutUsPage/>

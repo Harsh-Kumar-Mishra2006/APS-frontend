@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import { DollarSign, Plus, Eye, Loader, X, CheckCircle } from 'lucide-react';
-import AddFeeForm from '../components/forms/AddFeeForm';
-import AllFeesView from '../components/view/AllFeesView';
+import AddFeeForm from '../../components/form/AddFeeForm';
+import AllFeesView from '../../components/view/AllFeeView';
 
 const FeeManagement = () => {
   const { user, loading, authChecked } = useAuth();

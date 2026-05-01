@@ -46,10 +46,9 @@ const Navbar = () => {
     const adminItems = [
       { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
       { name: 'Add Members', href: '/add-members', icon: PlusCircle },
-      { name: 'Student Data', href: '/student-data', icon: FileText },
-      { name: 'Teacher Data', href: '/teacher-data', icon: Users },
-      { name: 'Parent Data', href: '/parent-data', icon: Users },
       { name: 'Add Attendance', href: '/add-attendance', icon: CalendarCheck },
+      { name: 'Fee Management', href: '/fee-management', icon: BarChart3 },
+      { name: 'Result Management', href: '/result-management', icon: FileText },
     ];
 
     if (user?.role === 'admin') {
