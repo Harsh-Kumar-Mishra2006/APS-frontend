@@ -213,18 +213,34 @@ const login = async (credentials) => {
     }
   };
 
-  // ============= LOGOUT =============
-  const logout = async () => {
-    try {
-      await api.post('auth/logout');
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      setUser(null);
-    }
-  };
+// ============= LOGOUT (INSTANT) =============
+const logout = () => {
+  try {
+    // Clear all local storage immediately
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('rememberMe');
+    
+    // Clear session storage
+    sessionStorage.clear();
+    
+    // Reset user state
+    setUser(null);
+    
+    // Optional: Clear cookies if any
+    document.cookie.split(";").forEach(function(c) {
+      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
+    
+    // Call logout API in background (don't wait)
+    api.post('auth/logout').catch(() => {});
+    
+  } catch (error) {
+    console.error('Logout error:', error);
+    // Even if error occurs, user is logged out locally
+    setUser(null);
+  }
+};
 
   // ============= GET PROFILE =============
   const getProfile = async () => {

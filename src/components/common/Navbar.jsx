@@ -141,10 +141,17 @@ const Navbar = () => {
   };
 
   const handleLogout = () => {
-    logout();
-    setIsDropdownOpen(false);
-    setIsMenuOpen(false);
-  };
+  // Close all dropdowns immediately
+  setIsDropdownOpen(false);
+  setIsMenuOpen(false);
+  
+  // Perform instant logout
+  logout();
+  
+  // Force immediate navigation to home page
+  // Using window.location.href ensures full page reload and clean state
+  window.location.href = '/';
+};
 
   const profileMenuItems = [
     { href: '/profile', icon: User, label: 'Profile' },
