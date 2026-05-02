@@ -1,19 +1,26 @@
 import React, { useState } from 'react';
 import api from '../../utils/api';
-import { X, Loader, Plus, Trash2, DollarSign, Calendar, Mail, Search, AlertCircle } from 'lucide-react';
+import { X, Loader, DollarSign, Calendar, Search, AlertCircle } from 'lucide-react';
 
 const AddFeeForm = ({ onSuccess, onCancel }) => {
   const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [error, setError] = useState('');
   const [student, setStudent] = useState(null);
-  const [searchMethod, setSearchMethod] = useState('email'); // 'email' or 'studentId'
   const [searchValue, setSearchValue] = useState('');
   const [formData, setFormData] = useState({
-    feeMonthFrom: '',
-    feeMonthTo: '',
-    feeYear: new Date().getFullYear(),
-    particulars: [{ description: '', amount: '' }],
+    currentMonth: '',
+    currentYear: new Date().getFullYear(),
+    pendingFrom: '',
+    pendingFromYear: new Date().getFullYear(),
+    monthsPending: 1,
+    monthlyFee: '',
+    transportFee: '',
+    examFee: '',
+    tuitionFee: '',
+    lateFee: '',
+    totalAmount: '',
+    amountInWords: '',
     dueDate: '',
     remarks: ''
   });
@@ -28,7 +35,7 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
 
   const searchStudent = async () => {
     if (!searchValue) {
-      setError(`Please enter student ${searchMethod === 'email' ? 'email' : 'ID'}`);
+      setError('Please enter student email');
       return;
     }
 
@@ -38,23 +45,15 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
     try {
       const response = await api.get('auth/users?role=student');
       if (response.data.success) {
-        let foundStudent = null;
-        
-        if (searchMethod === 'email') {
-          foundStudent = response.data.data.find(
-            s => s.email.toLowerCase() === searchValue.toLowerCase()
-          );
-        } else {
-          foundStudent = response.data.data.find(
-            s => s.student?.studentId === searchValue
-          );
-        }
+        const foundStudent = response.data.data.find(
+          s => s.email.toLowerCase() === searchValue.toLowerCase()
+        );
         
         if (foundStudent) {
           setStudent(foundStudent);
           setError('');
         } else {
-          setError('Student not found with this ' + (searchMethod === 'email' ? 'email' : 'ID'));
+          setError('Student not found with this email');
           setStudent(null);
         }
       }
@@ -65,44 +64,25 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
     }
   };
 
-  const addParticular = () => {
-    setFormData({
-      ...formData,
-      particulars: [...formData.particulars, { description: '', amount: '' }]
-    });
-  };
-
-  const removeParticular = (index) => {
-    const newParticulars = formData.particulars.filter((_, i) => i !== index);
-    setFormData({ ...formData, particulars: newParticulars });
-  };
-
-  const updateParticular = (index, field, value) => {
-    const newParticulars = [...formData.particulars];
-    newParticulars[index][field] = value;
-    setFormData({ ...formData, particulars: newParticulars });
-  };
-
-  const getTotalAmount = () => {
-    return formData.particulars.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
-  };
-
-  const validateMonths = () => {
-    const fromIndex = months.indexOf(formData.feeMonthFrom);
-    const toIndex = months.indexOf(formData.feeMonthTo);
+  const calculateTotal = () => {
+    const monthlyFee = parseFloat(formData.monthlyFee) || 0;
+    const transportFee = parseFloat(formData.transportFee) || 0;
+    const examFee = parseFloat(formData.examFee) || 0;
+    const tuitionFee = parseFloat(formData.tuitionFee) || 0;
+    const lateFee = parseFloat(formData.lateFee) || 0;
     
-    if (fromIndex === -1 || toIndex === -1) return false;
+    const total = monthlyFee + transportFee + examFee + tuitionFee + lateFee;
+    setFormData({ ...formData, totalAmount: total.toString() });
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
     
-    const monthDiff = toIndex - fromIndex + 1;
-    if (monthDiff > 12) {
-      setError('Fee period cannot exceed 12 months. Maximum is one year.');
-      return false;
+    // Recalculate total when any fee field changes
+    if (['monthlyFee', 'transportFee', 'examFee', 'tuitionFee', 'lateFee'].includes(name)) {
+      setTimeout(calculateTotal, 0);
     }
-    if (monthDiff < 1) {
-      setError('"To" month must be after "From" month');
-      return false;
-    }
-    return true;
   };
 
   const handleSubmit = async (e) => {
@@ -113,21 +93,19 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
       return;
     }
     
-    if (!formData.feeMonthFrom || !formData.feeMonthTo) {
-      setError('Please select fee period');
+    if (!formData.currentMonth) {
+      setError('Please select current month');
       return;
     }
-    
-    if (!validateMonths()) return;
     
     if (!formData.dueDate) {
       setError('Please select due date');
       return;
     }
     
-    const validParticulars = formData.particulars.filter(p => p.description && p.amount);
-    if (validParticulars.length === 0) {
-      setError('Please add at least one fee particular');
+    const totalAmount = parseFloat(formData.totalAmount);
+    if (isNaN(totalAmount) || totalAmount <= 0) {
+      setError('Please enter valid fee amounts');
       return;
     }
     
@@ -135,23 +113,43 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
     setError('');
     
     try {
-      const response = await api.post('fee/add-by-email', {
+      const payload = {
         email: student.email,
-        feeMonthFrom: formData.feeMonthFrom,
-        feeMonthTo: formData.feeMonthTo,
-        feeYear: formData.feeYear,
-        particulars: validParticulars,
+        currentMonth: formData.currentMonth,
+        currentYear: parseInt(formData.currentYear),
+        pendingFrom: formData.pendingFrom || formData.currentMonth,
+        pendingFromYear: parseInt(formData.pendingFromYear) || parseInt(formData.currentYear),
+        monthsPending: parseInt(formData.monthsPending) || 1,
+        monthlyFee: parseFloat(formData.monthlyFee) || 0,
+        transportFee: parseFloat(formData.transportFee) || 0,
+        examFee: parseFloat(formData.examFee) || 0,
+        tuitionFee: parseFloat(formData.tuitionFee) || 0,
+        lateFee: parseFloat(formData.lateFee) || 0,
+        totalAmount: parseFloat(formData.totalAmount),
+        amountInWords: formData.amountInWords || '',
         dueDate: formData.dueDate,
-        remarks: formData.remarks
-      });
+        remarks: formData.remarks || ''
+      };
+      
+      console.log('Sending payload:', payload);
+      
+      const response = await api.post('fee/add-by-email', payload);
       
       if (response.data.success) {
         // Reset form
         setFormData({
-          feeMonthFrom: '',
-          feeMonthTo: '',
-          feeYear: new Date().getFullYear(),
-          particulars: [{ description: '', amount: '' }],
+          currentMonth: '',
+          currentYear: new Date().getFullYear(),
+          pendingFrom: '',
+          pendingFromYear: new Date().getFullYear(),
+          monthsPending: 1,
+          monthlyFee: '',
+          transportFee: '',
+          examFee: '',
+          tuitionFee: '',
+          lateFee: '',
+          totalAmount: '',
+          amountInWords: '',
           dueDate: '',
           remarks: ''
         });
@@ -166,6 +164,7 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
         }
       }
     } catch (err) {
+      console.error('Error adding fee:', err);
       setError(err.response?.data?.error || 'Failed to add fee record');
     } finally {
       setLoading(false);
@@ -195,37 +194,12 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
         <div className="border-b pb-4">
           <h3 className="text-lg font-semibold text-gray-700 mb-3">1. Find Student</h3>
           
-          <div className="flex gap-3 mb-3">
-            <button
-              type="button"
-              onClick={() => setSearchMethod('email')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                searchMethod === 'email'
-                  ? 'bg-green-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              Search by Email
-            </button>
-            <button
-              type="button"
-              onClick={() => setSearchMethod('studentId')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                searchMethod === 'studentId'
-                  ? 'bg-green-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              Search by Student ID
-            </button>
-          </div>
-          
           <div className="flex gap-3">
             <input
-              type={searchMethod === 'email' ? 'email' : 'text'}
+              type="email"
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
-              placeholder={searchMethod === 'email' ? 'Enter student email' : 'Enter Student ID (e.g., STU2024001)'}
+              placeholder="Enter student email"
               className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
             />
             <button
@@ -241,7 +215,7 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
           
           {student && (
             <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p className="font-semibold text-green-800">{student.name}</p>
+              <p className="font-semibold text-green-800">✅ {student.name}</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2 text-sm">
                 <p><span className="text-gray-600">Email:</span> {student.email}</p>
                 <p><span className="text-gray-600">Class:</span> {student.student?.class} {student.student?.section}</p>
@@ -255,12 +229,13 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
         {/* Fee Period Section */}
         <div className="border-b pb-4">
           <h3 className="text-lg font-semibold text-gray-700 mb-3">2. Fee Period</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-gray-700 font-medium mb-2">From Month *</label>
+              <label className="block text-gray-700 font-medium mb-2">Current Month *</label>
               <select
-                value={formData.feeMonthFrom}
-                onChange={(e) => setFormData({ ...formData, feeMonthFrom: e.target.value })}
+                name="currentMonth"
+                value={formData.currentMonth}
+                onChange={handleInputChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                 required
               >
@@ -272,25 +247,11 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
             </div>
             
             <div>
-              <label className="block text-gray-700 font-medium mb-2">To Month *</label>
+              <label className="block text-gray-700 font-medium mb-2">Current Year *</label>
               <select
-                value={formData.feeMonthTo}
-                onChange={(e) => setFormData({ ...formData, feeMonthTo: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                required
-              >
-                <option value="">Select Month</option>
-                {months.map(month => (
-                  <option key={month} value={month}>{month}</option>
-                ))}
-              </select>
-            </div>
-            
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Year *</label>
-              <select
-                value={formData.feeYear}
-                onChange={(e) => setFormData({ ...formData, feeYear: parseInt(e.target.value) })}
+                name="currentYear"
+                value={formData.currentYear}
+                onChange={handleInputChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                 required
               >
@@ -302,73 +263,162 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
           </div>
         </div>
 
-        {/* Fee Particulars Section */}
+        {/* Fee Details Section */}
         <div className="border-b pb-4">
-          <h3 className="text-lg font-semibold text-gray-700 mb-3">3. Fee Particulars</h3>
-          <div className="space-y-3">
-            {formData.particulars.map((particular, index) => (
-              <div key={index} className="flex gap-3 items-start">
-                <input
-                  type="text"
-                  value={particular.description}
-                  onChange={(e) => updateParticular(index, 'description', e.target.value)}
-                  placeholder="Description (e.g., Tuition Fee, Sports Fee, Library Fee)"
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                />
-                <input
-                  type="number"
-                  value={particular.amount}
-                  onChange={(e) => updateParticular(index, 'amount', e.target.value)}
-                  placeholder="Amount"
-                  className="w-40 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                />
-                {formData.particulars.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeParticular(index)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                )}
-              </div>
-            ))}
+          <h3 className="text-lg font-semibold text-gray-700 mb-3">3. Fee Details</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Monthly Fee</label>
+              <input
+                type="number"
+                name="monthlyFee"
+                value={formData.monthlyFee}
+                onChange={handleInputChange}
+                placeholder="0"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+              />
+            </div>
             
-            <button
-              type="button"
-              onClick={addParticular}
-              className="text-green-600 hover:text-green-700 flex items-center gap-2 text-sm font-medium"
-            >
-              <Plus className="w-4 h-4" />
-              Add Another Particular
-            </button>
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Transport Fee</label>
+              <input
+                type="number"
+                name="transportFee"
+                value={formData.transportFee}
+                onChange={handleInputChange}
+                placeholder="0"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+              />
+            </div>
             
-            <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-              <div className="flex justify-between items-center">
-                <span className="font-semibold text-gray-700">Total Amount:</span>
-                <span className="text-2xl font-bold text-green-600">
-                  ₹{getTotalAmount().toLocaleString()}
-                </span>
-              </div>
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Exam Fee</label>
+              <input
+                type="number"
+                name="examFee"
+                value={formData.examFee}
+                onChange={handleInputChange}
+                placeholder="0"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Tuition Fee</label>
+              <input
+                type="number"
+                name="tuitionFee"
+                value={formData.tuitionFee}
+                onChange={handleInputChange}
+                placeholder="0"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Late Fee</label>
+              <input
+                type="number"
+                name="lateFee"
+                value={formData.lateFee}
+                onChange={handleInputChange}
+                placeholder="0"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Total Amount *</label>
+              <input
+                type="number"
+                name="totalAmount"
+                value={formData.totalAmount}
+                onChange={handleInputChange}
+                placeholder="Total Amount"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 font-bold"
+                required
+                readOnly
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Pending Period Section */}
+        <div className="border-b pb-4">
+          <h3 className="text-lg font-semibold text-gray-700 mb-3">4. Pending Period (Optional)</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Pending From Month</label>
+              <select
+                name="pendingFrom"
+                value={formData.pendingFrom}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+              >
+                <option value="">Same as Current</option>
+                {months.map(month => (
+                  <option key={month} value={month}>{month}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Pending From Year</label>
+              <select
+                name="pendingFromYear"
+                value={formData.pendingFromYear}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+              >
+                {years.map(year => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Months Pending</label>
+              <input
+                type="number"
+                name="monthsPending"
+                value={formData.monthsPending}
+                onChange={handleInputChange}
+                min="1"
+                max="12"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+              />
             </div>
           </div>
         </div>
 
         {/* Due Date Section */}
         <div className="border-b pb-4">
-          <h3 className="text-lg font-semibold text-gray-700 mb-3">4. Payment Details</h3>
+          <h3 className="text-lg font-semibold text-gray-700 mb-3">5. Payment Details</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-gray-700 font-medium mb-2  items-center gap-2">
+              <label className="block text-gray-700 font-medium mb-2 items-center gap-2">
                 <Calendar className="w-4 h-4" />
                 Due Date *
               </label>
               <input
                 type="date"
+                name="dueDate"
                 value={formData.dueDate}
-                onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                onChange={handleInputChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                 required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Amount in Words (Optional)</label>
+              <input
+                type="text"
+                name="amountInWords"
+                value={formData.amountInWords}
+                onChange={handleInputChange}
+                placeholder="e.g., Rupees Five Thousand Only"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
               />
             </div>
           </div>
@@ -376,12 +426,13 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
 
         {/* Remarks Section */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-700 mb-3">5. Additional Information</h3>
+          <h3 className="text-lg font-semibold text-gray-700 mb-3">6. Additional Information</h3>
           <textarea
+            name="remarks"
             value={formData.remarks}
-            onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
+            onChange={handleInputChange}
             rows="3"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg"
             placeholder="Any additional notes or remarks about this fee record..."
           />
         </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import api from '../../utils/api';
-import { Loader, Calendar, BookOpen, FileText, AlertCircle } from 'lucide-react';
+import { Loader, Calendar, BookOpen, FileText, AlertCircle, Plus } from 'lucide-react';
 
 const CreateExamForm = ({ onSuccess }) => {
   const [loading, setLoading] = useState(false);
@@ -21,7 +21,6 @@ const CreateExamForm = ({ onSuccess }) => {
   ];
 
   const terms = ['Term 1', 'Term 2', 'Final'];
-
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 5 }, (_, i) => currentYear + i);
 
@@ -54,8 +53,6 @@ const CreateExamForm = ({ onSuccess }) => {
         });
         if (onSuccess) {
           onSuccess(`Exam "${response.data.data.examType}" created successfully!`);
-        } else {
-          alert('Exam created successfully!');
         }
       }
     } catch (err) {
@@ -67,111 +64,101 @@ const CreateExamForm = ({ onSuccess }) => {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">📚 Create New Exam</h2>
+      <div className="text-center mb-6">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-2xl shadow-lg mb-3">
+          <BookOpen className="w-8 h-8 text-white" />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-800">Create New Exam</h2>
+        <p className="text-gray-500 text-sm mt-1">Set up exam details before adding results</p>
+      </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg flex items-center gap-2">
+        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-xl flex items-center gap-2">
           <AlertCircle className="w-5 h-5" />
-          {error}
+          <span className="text-sm">{error}</span>
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-gray-700 font-medium mb-2">Exam Type *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Exam Type *</label>
             <select
               value={formData.examType}
               onChange={(e) => setFormData({ ...formData, examType: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 bg-white"
               required
             >
               <option value="">Select Exam Type</option>
-              {examTypes.map(type => (
-                <option key={type} value={type}>{type}</option>
-              ))}
+              {examTypes.map(type => <option key={type} value={type}>{type}</option>)}
             </select>
           </div>
 
           <div>
-            <label className="block text-gray-700 font-medium mb-2">Exam Year *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Exam Year *</label>
             <select
               value={formData.examYear}
               onChange={(e) => setFormData({ ...formData, examYear: parseInt(e.target.value) })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 bg-white"
               required
             >
-              {years.map(year => (
-                <option key={year} value={year}>{year}</option>
-              ))}
+              {years.map(year => <option key={year} value={year}>{year}</option>)}
             </select>
           </div>
 
           <div>
-            <label className="block text-gray-700 font-medium mb-2">Term (Optional)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Term (Optional)</label>
             <select
               value={formData.term}
               onChange={(e) => setFormData({ ...formData, term: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 bg-white"
             >
               <option value="">Select Term</option>
-              {terms.map(term => (
-                <option key={term} value={term}>{term}</option>
-              ))}
+              {terms.map(term => <option key={term} value={term}>{term}</option>)}
             </select>
           </div>
 
-          <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-gray-700 font-medium mb-2 items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                Start Date *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Start Date *</label>
               <input
                 type="date"
                 value={formData.startDate}
                 onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500"
                 required
               />
             </div>
-
             <div>
-              <label className="block text-gray-700 font-medium mb-2 items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                End Date *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">End Date *</label>
               <input
                 type="date"
                 value={formData.endDate}
                 onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500"
                 required
               />
             </div>
           </div>
+        </div>
 
-          <div className="md:col-span-2">
-            <label className="block text-gray-700 font-medium mb-2 items-center gap-2">
-              <FileText className="w-4 h-4" />
-              Description (Optional)
-            </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              rows="3"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-              placeholder="Additional details about the exam..."
-            />
-          </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Description (Optional)</label>
+          <textarea
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            rows="3"
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500"
+            placeholder="Additional details about the exam..."
+          />
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 transition disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-cyan-700 transition disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg"
         >
-          {loading ? <Loader className="w-5 h-5 animate-spin" /> : <BookOpen className="w-5 h-5" />}
+          {loading ? <Loader className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
           Create Exam
         </button>
       </form>
