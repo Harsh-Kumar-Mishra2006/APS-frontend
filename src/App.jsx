@@ -23,6 +23,15 @@ import FeeManagement from './pages/fee/FeeManagement'
 import ResultManagement from './pages/result/ResultManagement'
 
 const App = () => {
+
+  const { user, isAuthenticated } = useAuth();
+  
+  useEffect(() => {
+    console.log('🎉 App loaded');
+    console.log('🔐 Authentication status:', isAuthenticated);
+    console.log('👤 Current user:', user?.email || 'No user logged in');
+  }, [user, isAuthenticated]);
+  
   return (
     <Router>
       <AuthProvider>

@@ -213,31 +213,45 @@ const login = async (credentials) => {
     }
   };
 
-// ============= LOGOUT (INSTANT) =============
-const logout = () => {
+// ============= LOGOUT (INSTANT WITH ALERTS) =============
+const logout = async () => {
+  console.log('🚪 Logout triggered');
+  console.log('📝 Current user before logout:', user?.email);
+  
   try {
     // Clear all local storage immediately
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('rememberMe');
+    console.log('✅ Local storage cleared');
     
     // Clear session storage
     sessionStorage.clear();
+    console.log('✅ Session storage cleared');
     
-    // Reset user state
-    setUser(null);
-    
-    // Optional: Clear cookies if any
+    // Clear cookies
     document.cookie.split(";").forEach(function(c) {
       document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
     });
+    console.log('✅ Cookies cleared');
     
-    // Call logout API in background (don't wait)
-    api.post('auth/logout').catch(() => {});
+    // Reset user state
+    setUser(null);
+    console.log('✅ User state reset to null');
+    
+    // Try API call in background (don't wait)
+    api.post('auth/logout').then(() => {
+      console.log('✅ Backend logout API called successfully');
+    }).catch((err) => {
+      console.warn('⚠️ Backend logout API failed (non-critical):', err.message);
+    });
+    
+    console.log('✅ Logout completed successfully');
+    alert('👋 You have been successfully logged out!');
     
   } catch (error) {
-    console.error('Logout error:', error);
-    // Even if error occurs, user is logged out locally
+    console.error('❌ Logout error:', error);
+    alert('⚠️ Logout completed but with errors. You are safely logged out.');
     setUser(null);
   }
 };

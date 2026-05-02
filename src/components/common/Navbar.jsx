@@ -141,15 +141,29 @@ const Navbar = () => {
   };
 
   const handleLogout = () => {
+  console.log('🖱️ Logout button clicked');
+  
   // Close all dropdowns immediately
   setIsDropdownOpen(false);
   setIsMenuOpen(false);
+  console.log('📱 Dropdowns closed');
+  
+  // Show confirmation alert
+  const confirmLogout = window.confirm('Are you sure you want to logout?');
+  
+  if (!confirmLogout) {
+    console.log('❌ Logout cancelled by user');
+    return;
+  }
+  
+  console.log('✅ User confirmed logout, proceeding...');
   
   // Perform instant logout
   logout();
   
+  console.log('🔄 Redirecting to home page...');
+  
   // Force immediate navigation to home page
-  // Using window.location.href ensures full page reload and clean state
   window.location.href = '/';
 };
 
@@ -381,7 +395,7 @@ const Navbar = () => {
                   
                   <button onClick={handleLogout} className="flex items-center w-full px-3 py-2.5 mt-2 text-red-300 hover:text-red-200 hover:bg-blue-700 rounded-lg">
                     <LogOut className="h-5 w-5 mr-3" />
-                    Sign out
+                    Log out
                   </button>
                 </div>
               )}
