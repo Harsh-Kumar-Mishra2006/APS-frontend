@@ -22,6 +22,8 @@ import Attendance from './pages/Attendance/AddAttendance'
 import FeeManagement from './pages/fee/FeeManagement'
 import ResultManagement from './pages/result/ResultManagement'
 import ContactForm from './pages/Form/contactForm'
+import StudentAttendancePage from './pages/Attendance/studentAttendencePage'
+import TeacherAttendancePage from './pages/Attendance/TeacherAttendancePage'
 
 const App = () => {
   return (
@@ -40,7 +42,7 @@ const App = () => {
               <Route path='/student-data' element={<StudentData/>}/>
               <Route path='/parent-data' element={<ParentData/>}/>
               <Route path='/teacher-data' element={<TeacherData/>}/>
-              <Route path='/add-attendance' element={<Attendance/>}/>
+              <Route path='/add-attendance' element={<TeacherAttendancePage/>}/>
               <Route path='/student-dashboard' element={<StudentDashboard/>}/>
               <Route path='/parent-dashboard' element={<ParentDashboard/>}/>
               <Route path='/teacher-dashboard' element={<TeacherDashboard/>}/> 
