@@ -36,16 +36,17 @@ const TeacherAttendancePage = () => {
 
   // ============= DEFINE FUNCTIONS FIRST =============
   const fetchTeachers = async () => {
-    setLoadingTeachers(true);
-    try {
-      const response = await api.get('users?role=teacher');
-      if (response.data.success) setTeachers(response.data.data);
-    } catch (error) {
-      console.error('Error fetching teachers:', error);
-    } finally {
-      setLoadingTeachers(false);
-    }
-  };
+  setLoadingTeachers(true);
+  try {
+    // Change this line
+    const response = await api.get('auth/users?role=teacher');
+    if (response.data.success) setTeachers(response.data.data);
+  } catch (error) {
+    console.error('Error fetching teachers:', error);
+  } finally {
+    setLoadingTeachers(false);
+  }
+};
 
   const statusOptions = [
     { value: 'present', label: 'Present', icon: CheckCircle, color: 'green' },
@@ -65,6 +66,7 @@ const TeacherAttendancePage = () => {
       setMessage({ type: 'error', text: 'Please enter Teacher ID' });
       return;
     }
+    
     setSubmitting(true);
     try {
       const response = await api.post('attendance/teacher/mark', {
