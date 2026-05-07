@@ -21,6 +21,7 @@ import TeacherDashboard from './pages/teacher/TeacherDashboard'
 import Attendance from './pages/Attendance/AddAttendance'
 import FeeManagement from './pages/fee/FeeManagement'
 import ResultManagement from './pages/result/ResultManagement'
+import ContactForm from './pages/Form/contactForm'
 
 const App = () => {
   return (
@@ -56,7 +57,7 @@ const App = () => {
               element={
                 <ContactPage/>
               } />
-              <Route path="/gallery" element={<AdmissionPage/>}>
+              <Route path="/gallery" element={<ContactForm/>}>
               </Route>
             </Routes>
           </main>

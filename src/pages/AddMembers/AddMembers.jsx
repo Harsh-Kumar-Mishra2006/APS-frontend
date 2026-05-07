@@ -17,9 +17,9 @@ const AddMembers = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [generatedPassword, setGeneratedPassword] = useState('');
   // Add state for view modals inside AddMembers component
-const [showViewTeachers, setShowViewTeachers] = useState(false);
-const [showViewStudents, setShowViewStudents] = useState(false);
-const [showViewParents, setShowViewParents] = useState(false);
+  const [showViewTeachers, setShowViewTeachers] = useState(false);
+  const [showViewStudents, setShowViewStudents] = useState(false);
+  const [showViewParents, setShowViewParents] = useState(false);
 
 
   // ✅ Show loading while checking auth

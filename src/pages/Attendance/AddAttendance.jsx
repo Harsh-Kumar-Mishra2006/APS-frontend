@@ -1,8 +1,9 @@
+// pages/Attendance/Attendance.jsx
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import StudentAttendanceForm from '../../components/Attendance/StudentAttendanceForm';
-import TeacherAttendanceForm from '../../components/Attendance/TeacherAttendanceForm';
-import ViewAttendance from '../../components/Attendance/viewAttendance';
+import MarkStudentAttendance from '../../components/Attendance/MarkStudentAttendance';
+import MarkTeacherAttendance from '../../components/Attendance/MarkTeacherAttendance';
+import ViewAttendance from '../../components/Attendance/ViewAttendance';
 import { 
   Calendar, 
   Users, 
@@ -15,19 +16,20 @@ import {
   CheckCircle,
   TrendingUp,
   Award,
-  ChevronRight
+  ChevronRight,
+  Sparkles,
+  Shield
 } from 'lucide-react';
 
 const Attendance = () => {
   const { user, loading, authChecked } = useAuth();
-  const [activeTab, setActiveTab] = useState('monthly-student');
+  const [activeTab, setActiveTab] = useState('mark-student');
   const [hoveredTab, setHoveredTab] = useState(null);
 
   // Check permissions
-  const canManageAttendance = user?.role === 'admin' || user?.role === 'teacher';
-  const canViewOwnAttendance = user?.role === 'student' || user?.role === 'teacher' || user?.role === 'parent';
-
-  
+  const canMarkStudentAttendance = user?.role === 'admin' || user?.role === 'teacher';
+  const canMarkTeacherAttendance = user?.role === 'admin';
+  const canViewAttendance = user?.role === 'student' || user?.role === 'teacher' || user?.role === 'parent' || user?.role === 'admin';
 
   if (loading || !authChecked) {
     return (
@@ -43,51 +45,34 @@ const Attendance = () => {
     );
   }
 
-  if (!user || user.role !== 'admin') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-2xl p-10 text-center max-w-md transform transition-all">
-          <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <div className="text-red-500 text-5xl">⚠️</div>
-          </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-3">Access Denied</h2>
-          <p className="text-gray-600 mb-6">Only administrators can access the attendance management page.</p>
-          <button 
-            onClick={() => window.history.back()}
-            className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
-          >
-            Go Back
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   const tabs = [
-    { 
-      id: 'monthly-student', 
-      label: 'Student Attendance', 
-      icon: GraduationCap, 
-      description: 'Add monthly attendance for students',
+    ...(canMarkStudentAttendance ? [{
+      id: 'mark-student',
+      label: 'Mark Student Attendance',
+      icon: GraduationCap,
+      description: 'Daily attendance for students using Student ID',
       color: 'blue',
-      gradient: 'from-blue-500 to-blue-600'
-    },
-    { 
-      id: 'monthly-teacher', 
-      label: 'Teacher Attendance', 
-      icon: BookOpen, 
-      description: 'Add monthly attendance for teachers',
+      gradient: 'from-blue-500 to-blue-600',
+      badge: 'Teacher Access'
+    }] : []),
+    ...(canMarkTeacherAttendance ? [{
+      id: 'mark-teacher',
+      label: 'Mark Teacher Attendance',
+      icon: BookOpen,
+      description: 'Daily attendance for teachers using Teacher ID',
       color: 'green',
-      gradient: 'from-green-500 to-green-600'
-    },
-    { 
-      id: 'view', 
-      label: 'View Records', 
-      icon: BarChart3, 
-      description: 'View and analyze attendance data',
+      gradient: 'from-green-500 to-green-600',
+      badge: 'Admin Only'
+    }] : []),
+    ...(canViewAttendance ? [{
+      id: 'view',
+      label: 'View Records',
+      icon: BarChart3,
+      description: 'View attendance history and statistics',
       color: 'purple',
-      gradient: 'from-purple-500 to-purple-600'
-    }
+      gradient: 'from-purple-500 to-purple-600',
+      badge: user?.role === 'parent' ? 'Parent View' : 'Self View'
+    }] : [])
   ];
 
   const getTabStyles = (tabId) => {
@@ -96,33 +81,58 @@ const Attendance = () => {
     
     if (isActive) {
       const tab = tabs.find(t => t.id === tabId);
-      return `bg-gradient-to-r ${tab.gradient} text-white shadow-lg scale-105`;
+      return `bg-gradient-to-r ${tab.gradient} text-white shadow-xl scale-105 ring-2 ring-white ring-opacity-50`;
     }
-    return `bg-white text-gray-700 hover:shadow-md hover:scale-102 transition-all duration-300 border-2 border-transparent hover:border-${tabs.find(t => t.id === tabId)?.color}-200`;
+    return `bg-white text-gray-700 hover:shadow-xl hover:scale-102 transition-all duration-300 border-2 border-gray-100 hover:border-${tabs.find(t => t.id === tabId)?.color}-300`;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/30">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/20 to-indigo-50/20">
       {/* Hero Section */}
       <div className="relative bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white overflow-hidden">
-        <div className="absolute inset-0 bg-black opacity-10"></div>
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-white opacity-10 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white opacity-10 rounded-full blur-3xl"></div>
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
+        
+        {/* Animated particles */}
+        <div className="absolute inset-0 overflow-hidden">
+          {[...Array(20)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute bg-white/20 rounded-full animate-float"
+              style={{
+                width: Math.random() * 4 + 2 + 'px',
+                height: Math.random() * 4 + 2 + 'px',
+                top: Math.random() * 100 + '%',
+                left: Math.random() * 100 + '%',
+                animationDelay: Math.random() * 5 + 's',
+                animationDuration: Math.random() * 10 + 5 + 's'
+              }}
+            />
+          ))}
+        </div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="text-center md:text-left">
-              <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-4">
-                <Calendar className="w-4 h-4" />
-                <span className="text-sm font-medium">Attendance Management System</span>
+              <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-4 animate-pulse">
+                <Sparkles className="w-4 h-4" />
+                <span className="text-sm font-medium">Daily Attendance System</span>
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-3">Track Attendance</h1>
+              <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+                Attendance Management
+              </h1>
               <p className="text-lg text-blue-100 max-w-2xl">
-                Manage and monitor student and teacher attendance records efficiently
+                Mark daily attendance using Student/Teacher IDs • Auto-calculate monthly summaries
               </p>
             </div>
             
-            
+            <div className="flex gap-3">
+              <div className="bg-white/20 backdrop-blur-sm rounded-xl px-4 py-2 text-center">
+                <div className="text-2xl font-bold">{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
+                <div className="text-xs opacity-80">Current Date</div>
+              </div>
+            </div>
           </div>
         </div>
         
@@ -136,15 +146,10 @@ const Attendance = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tab Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div className={`grid gap-6 mb-10 ${tabs.length === 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-3'}`}>
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
-            const colorClass = {
-              blue: 'hover:border-blue-300 group-hover:bg-blue-50',
-              green: 'hover:border-green-300 group-hover:bg-green-50',
-              purple: 'hover:border-purple-300 group-hover:bg-purple-50'
-            }[tab.color];
             
             return (
               <button
@@ -154,7 +159,7 @@ const Attendance = () => {
                 onMouseLeave={() => setHoveredTab(null)}
                 className={`
                   group relative overflow-hidden rounded-2xl p-6 text-left transition-all duration-300
-                  ${isActive ? `bg-gradient-to-r ${tab.gradient} text-white shadow-xl scale-105 ring-2 ring-white ring-opacity-50` : 'bg-white text-gray-700 hover:shadow-lg border-2 border-gray-100'}
+                  ${getTabStyles(tab.id)}
                 `}
               >
                 {!isActive && (
@@ -163,23 +168,32 @@ const Attendance = () => {
                 
                 <div className="relative z-10">
                   <div className={`
-                    w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-all duration-300
+                    w-14 h-14 rounded-xl flex items-center justify-center mb-4 transition-all duration-300
                     ${isActive ? 'bg-white/20' : `bg-${tab.color}-100 group-hover:bg-${tab.color}-200`}
                   `}>
-                    <Icon className={`w-6 h-6 ${isActive ? 'text-white' : `text-${tab.color}-600`}`} />
+                    <Icon className={`w-7 h-7 ${isActive ? 'text-white' : `text-${tab.color}-600`}`} />
                   </div>
                   
-                  <h3 className={`text-lg font-bold mb-2 ${isActive ? 'text-white' : 'text-gray-800'}`}>
+                  <h3 className={`text-xl font-bold mb-2 ${isActive ? 'text-white' : 'text-gray-800'}`}>
                     {tab.label}
                   </h3>
                   
-                  <p className={`text-sm mb-4 ${isActive ? 'text-blue-100' : 'text-gray-500'}`}>
+                  <p className={`text-sm mb-3 ${isActive ? 'text-blue-100' : 'text-gray-500'}`}>
                     {tab.description}
                   </p>
                   
-                  <div className={`flex items-center gap-1 text-sm font-medium ${isActive ? 'text-white' : `text-${tab.color}-600`}`}>
-                    <span>{isActive ? 'Active' : 'Click to open'}</span>
-                    <ChevronRight className={`w-4 h-4 transition-transform ${isActive ? 'translate-x-1' : 'group-hover:translate-x-1'}`} />
+                  <div className="flex items-center justify-between">
+                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                      isActive ? 'bg-white/20 text-white' : `bg-${tab.color}-50 text-${tab.color}-600`
+                    }`}>
+                      <Shield className="w-3 h-3" />
+                      {tab.badge}
+                    </span>
+                    
+                    <div className={`flex items-center gap-1 text-sm font-medium ${isActive ? 'text-white' : `text-${tab.color}-600`}`}>
+                      <span>{isActive ? 'Active' : 'Click to open'}</span>
+                      <ChevronRight className={`w-4 h-4 transition-transform ${isActive ? 'translate-x-1' : 'group-hover:translate-x-1'}`} />
+                    </div>
                   </div>
                 </div>
                 
@@ -195,32 +209,30 @@ const Attendance = () => {
 
         {/* Main Content Area */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          {/* Tab Indicator */}
           <div className="bg-gray-50 border-b border-gray-200 px-6 py-3">
             <div className="flex items-center gap-3">
               <div className={`
                 w-2 h-2 rounded-full animate-pulse
-                ${activeTab === 'monthly-student' ? 'bg-blue-500' : activeTab === 'monthly-teacher' ? 'bg-green-500' : 'bg-purple-500'}
+                ${activeTab === 'mark-student' ? 'bg-blue-500' : activeTab === 'mark-teacher' ? 'bg-green-500' : 'bg-purple-500'}
               `}></div>
               <span className="text-sm font-medium text-gray-600">
-                {activeTab === 'monthly-student' && 'Adding Student Attendance'}
-                {activeTab === 'monthly-teacher' && 'Adding Teacher Attendance'}
-                {activeTab === 'view' && 'Viewing Attendance Records'}
+                {activeTab === 'mark-student' && 'Mark Student Attendance (Daily)'}
+                {activeTab === 'mark-teacher' && 'Mark Teacher Attendance (Daily)'}
+                {activeTab === 'view' && 'View Attendance Records'}
               </span>
             </div>
           </div>
           
-          {/* Content */}
           <div className="p-6 md:p-8">
-            {activeTab === 'monthly-student' && user?.role === 'admin' && (
+            {activeTab === 'mark-student' && canMarkStudentAttendance && (
               <div className="animate-fadeIn">
-                <StudentAttendanceForm />
+                <MarkStudentAttendance />
               </div>
             )}
             
-            {activeTab === 'monthly-teacher' && user?.role === 'admin' && (
+            {activeTab === 'mark-teacher' && canMarkTeacherAttendance && (
               <div className="animate-fadeIn">
-                <TeacherAttendanceForm />
+                <MarkTeacherAttendance />
               </div>
             )}
             
@@ -232,12 +244,17 @@ const Attendance = () => {
           </div>
         </div>
         
-        {/* Footer Note */}
-        <div className="mt-8 text-center">
-          <p className="text-xs text-gray-400 flex items-center justify-center gap-2">
-            <Clock className="w-3 h-3" />
-            Attendance records are updated in real-time
-          </p>
+        {/* Info Footer */}
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-blue-50 rounded-xl p-3 text-center">
+            <p className="text-xs text-blue-600">📝 Daily attendance auto-calculates monthly summary</p>
+          </div>
+          <div className="bg-green-50 rounded-xl p-3 text-center">
+            <p className="text-xs text-green-600">🎓 Teachers mark student attendance • Admin marks teacher attendance</p>
+          </div>
+          <div className="bg-purple-50 rounded-xl p-3 text-center">
+            <p className="text-xs text-purple-600">👨‍👩‍👧 Parents can view all children's attendance</p>
+          </div>
         </div>
       </div>
 
@@ -253,8 +270,17 @@ const Attendance = () => {
           }
         }
         
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-20px); }
+        }
+        
         .animate-fadeIn {
           animation: fadeIn 0.5s ease-out;
+        }
+        
+        .animate-float {
+          animation: float linear infinite;
         }
         
         .scale-102:hover {
