@@ -11,23 +11,20 @@ import {
 
 const TeacherAttendancePage = () => {
   const { user, loading, authChecked } = useAuth();
-  const [activeTab, setActiveTab] = useState('mark');
   
-  // State for marking attendance
+  // ============= ALL HOOKS MUST BE FIRST =============
+  const [activeTab, setActiveTab] = useState('mark');
   const [submitting, setSubmitting] = useState(false);
   const [loadingTeachers, setLoadingTeachers] = useState(false);
   const [teachers, setTeachers] = useState([]);
   const [selectedTeacher, setSelectedTeacher] = useState('');
   const [message, setMessage] = useState({ type: '', text: '' });
-  
-  // State for viewing attendance
   const [viewTeacherId, setViewTeacherId] = useState('');
   const [viewMonth, setViewMonth] = useState(new Date().toLocaleString('default', { month: 'long' }));
   const [viewYear, setViewYear] = useState(new Date().getFullYear());
   const [attendanceData, setAttendanceData] = useState(null);
   const [viewLoading, setViewLoading] = useState(false);
   const [viewMode, setViewMode] = useState('monthly');
-  
   const [formData, setFormData] = useState({
     teacherId: '',
     status: 'present',
@@ -37,31 +34,7 @@ const TeacherAttendancePage = () => {
     checkOutTime: ''
   });
 
-  // Check permissions
-  if (loading || !authChecked) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 flex items-center justify-center">
-        <Loader className="w-12 h-12 animate-spin text-green-600" />
-      </div>
-    );
-  }
-
-  if (user?.role !== 'admin') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-2xl p-10 text-center max-w-md">
-          <Shield className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-800 mb-3">Access Denied</h2>
-          <p className="text-gray-600">Only administrators can access teacher attendance management.</p>
-        </div>
-      </div>
-    );
-  }
-
-  useEffect(() => {
-    fetchTeachers();
-  }, []);
-
+  // ============= DEFINE FUNCTIONS FIRST =============
   const fetchTeachers = async () => {
     setLoadingTeachers(true);
     try {
@@ -77,6 +50,9 @@ const TeacherAttendancePage = () => {
   const statusOptions = [
     { value: 'present', label: 'Present', icon: CheckCircle, color: 'green' },
     { value: 'absent', label: 'Absent', icon: X, color: 'red' },
+    { value: 'late', label: 'Late', icon: Clock, color: 'yellow' },
+    { value: 'half-day', label: 'Half Day', icon: Sun, color: 'orange' },
+    { value: 'on-leave', label: 'On Leave', icon: Calendar, color: 'purple' }
   ];
 
   const months = ['January', 'February', 'March', 'April', 'May', 'June',
@@ -133,6 +109,36 @@ const TeacherAttendancePage = () => {
     }
   };
 
+  // ============= useEffect AFTER function definitions =============
+  useEffect(() => {
+    fetchTeachers();
+  }, []);
+
+  // ============= AFTER ALL HOOKS AND FUNCTIONS, THEN CONDITIONAL RETURNS =============
+  
+  // Check loading state
+  if (loading || !authChecked) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 flex items-center justify-center">
+        <Loader className="w-12 h-12 animate-spin text-green-600" />
+      </div>
+    );
+  }
+
+  // Check admin access
+  if (user?.role !== 'admin') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-2xl p-10 text-center max-w-md">
+          <Shield className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-800 mb-3">Access Denied</h2>
+          <p className="text-gray-600">Only administrators can access teacher attendance management.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ============= RENDER =============
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
       {/* Hero Section */}

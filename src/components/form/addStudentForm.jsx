@@ -17,6 +17,7 @@ const AddStudentForm = ({ onSuccess, onCancel }) => {
     section: '',
     fatherName: '',
     motherName: '',
+    parentEmail: '',  // ← ADD THIS FIELD
     address: '',
     dateOfBirth: '',
     gender: '',
@@ -45,6 +46,12 @@ const AddStudentForm = ({ onSuccess, onCancel }) => {
 
     if (!formData.email.includes('@')) {
       setError('Please enter a valid email address');
+      return;
+    }
+
+    // Optional: Validate parent email if provided
+    if (formData.parentEmail && !formData.parentEmail.includes('@')) {
+      setError('Please enter a valid parent email address');
       return;
     }
 
@@ -174,7 +181,6 @@ const AddStudentForm = ({ onSuccess, onCancel }) => {
             </select>
           </div>
 
-
           {/* Academic Information */}
           <div className="col-span-2">
             <h3 className="text-lg font-semibold text-gray-700 mb-3 border-b pb-2 mt-2">Academic Information</h3>
@@ -262,6 +268,21 @@ const AddStudentForm = ({ onSuccess, onCancel }) => {
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Mother's Name"
+            />
+          </div>
+
+          {/* ← ADD PARENT EMAIL FIELD HERE */}
+          <div className="col-span-2">
+            <label className="block text-gray-700 font-medium mb-2">
+              Parent Email <span className="text-red-500 font-bold text-sm">(Important)</span>
+            </label>
+            <input
+              type="email"
+              name="parentEmail"
+              value={formData.parentEmail}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="parent@email.com"
             />
           </div>
 
