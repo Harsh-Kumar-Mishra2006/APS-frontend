@@ -49,13 +49,21 @@ const Navbar = () => {
       { name: 'Add Attendance', href: '/add-attendance', icon: CalendarCheck },
       { name: 'Fee Management', href: '/fee-management', icon: BarChart3 },
       { name: 'Result Management', href: '/result-management', icon: FileText },
-      { name: 'Tecaher Attendance', href: '/teacher-attendance', icon: CalendarCheck },
+      { name: 'Teacher Attendance', href: '/teacher-attendance', icon: CalendarCheck },
+    ];
+
+    const teacherItems = [
+      { name: 'Teacher Attendance', href: '/teacher-attendance', icon: CalendarCheck },
     ];
 
     if (user?.role === 'admin') {
       return [...publicItems, ...adminItems];
     }
-    
+
+    if (user?.role === 'teacher') {
+      return [...publicItems, ...teacherItems];
+    }
+
     return publicItems;
   };
 
