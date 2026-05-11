@@ -46,7 +46,6 @@ const Navbar = () => {
     const adminItems = [
       { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
       { name: 'Add Members', href: '/add-members', icon: PlusCircle },
-      { name: 'Add Attendance', href: '/add-attendance', icon: CalendarCheck },
       { name: 'Fee Management', href: '/fee-management', icon: BarChart3 },
       { name: 'Result Management', href: '/result-management', icon: FileText },
       { name: 'Teacher Attendance', href: '/teacher-attendance', icon: CalendarCheck },
