@@ -6,8 +6,11 @@ import {
   Calendar, Users, UserCheck, Clock, BarChart3,
   BookOpen, Loader, CheckCircle, TrendingUp,
   Sparkles, Shield, Search, Eye, PenTool, X, Sun,
-  Zap, Save, AlertCircle, Moon
+  Zap, Save, AlertCircle, Moon,
+  View
 } from 'lucide-react';
+import ViewAttendanceRecords from '../../components/view/viewAttendenceRecords';
+
 
 const TeacherAttendancePage = () => {
   const { user, loading, authChecked } = useAuth();
@@ -376,6 +379,8 @@ const TeacherAttendancePage = () => {
           <div className="bg-purple-50 rounded-xl p-3 text-center"><p className="text-xs text-purple-600">👨‍🏫 Use Teacher ID (e.g., TCH001) to mark attendance quickly</p></div>
         </div>
       </div>
+
+      <ViewAttendanceRecords />
 
       <style>{`
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
