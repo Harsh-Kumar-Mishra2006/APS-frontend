@@ -1,6 +1,6 @@
 // src/App.jsx
-import React, { Children } from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import React from 'react'  // Changed: removed Children (not needed)
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'  // Added Navigate
 import { AuthProvider } from './context/AuthContext'
 import Navbar from './components/common/Navbar'
 import HomeHeroPage from './components/Heropage/Homeheropage'
@@ -48,19 +48,13 @@ const App = () => {
               <Route path='/teacher-dashboard' element={<TeacherDashboard/>}/> 
               <Route path='/fee-management' element={<FeeManagement/>}/>
               <Route path='/result-management' element={<ResultManagement/>}/>
-              {/* Add more routes as needed */}
-              <Route path="/about" element={
-                <AboutUsPage/>
-              } />
-              <Route path="/admissions" element={
-                <AdmissionPage/>
-              } />
-              <Route path="/contact" 
-              element={
-                <ContactPage/>
-              } />
-              <Route path="/gallery" element={<ContactForm/>}>
-              </Route>
+              <Route path="/about" element={<AboutUsPage/>} />
+              <Route path="/admissions" element={<AdmissionPage/>} />
+              <Route path="/contact" element={<ContactPage/>} />
+              <Route path="/gallery" element={<ContactForm/>} />
+              
+              {/* ✅ CATCH-ALL ROUTE - MUST BE INSIDE <Routes> */}
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>
           <Footer/>
