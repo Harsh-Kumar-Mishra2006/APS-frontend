@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../utils/api';
-import { Loader, Search, Plus, Trash2, AlertCircle, Send, GraduationCap, BookOpen, Award } from 'lucide-react';
+import { Loader, Search, Plus, Trash2, AlertCircle, Send, GraduationCap, BookOpen, Award, User } from 'lucide-react';
 
 const AddResultForm = ({ onSuccess }) => {
   const [loading, setLoading] = useState(false);
@@ -33,7 +33,7 @@ const AddResultForm = ({ onSuccess }) => {
 
   const searchStudent = async () => {
     if (!searchValue) {
-      setError('Please enter student email');
+      setError('Please enter student ID');
       return;
     }
 
@@ -41,22 +41,40 @@ const AddResultForm = ({ onSuccess }) => {
     setError('');
 
     try {
-      const response = await api.get('auth/users?role=student');
+      // Fetch all students and filter by studentId
+      const response = await api.get('students'); // Adjust this endpoint based on your API
       if (response.data.success) {
         const foundStudent = response.data.data.find(
-          s => s.email.toLowerCase() === searchValue.toLowerCase()
+          s => s.studentId?.toLowerCase() === searchValue.toLowerCase() || 
+               s.id?.toString() === searchValue.toString()
         );
         
         if (foundStudent) {
           setStudent(foundStudent);
           setError('');
         } else {
-          setError('Student not found with this email');
+          setError('Student not found with this ID');
+          setStudent(null);
+        }
+      } else {
+        // Alternative: Try direct endpoint if available
+        try {
+          const directResponse = await api.get(`students/${searchValue}`);
+          if (directResponse.data.success) {
+            setStudent(directResponse.data.data);
+            setError('');
+          } else {
+            setError('Student not found');
+            setStudent(null);
+          }
+        } catch {
+          setError('Student not found with this ID');
           setStudent(null);
         }
       }
     } catch (err) {
       setError('Failed to search student');
+      setStudent(null);
     } finally {
       setSearchLoading(false);
     }
@@ -118,8 +136,9 @@ const AddResultForm = ({ onSuccess }) => {
     setError('');
 
     try {
-      const response = await api.post('results/add-by-email', {
-        email: student.email,
+      // Use studentId instead of email
+      const response = await api.post('results/add-by-id', {
+        studentId: student.studentId || student.id, // Send student ID
         examId: parseInt(selectedExam),
         subjects: formattedSubjects,
         rank: rank ? parseInt(rank) : null,
@@ -136,7 +155,7 @@ const AddResultForm = ({ onSuccess }) => {
         setRank('');
         
         if (onSuccess) {
-          onSuccess(`Result for ${student.name} added successfully!`);
+          onSuccess(`Result for ${student.name || student.user?.name} added successfully!`);
         }
       }
     } catch (err) {
@@ -167,18 +186,18 @@ const AddResultForm = ({ onSuccess }) => {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Search Student */}
+        {/* Search Student by ID */}
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4">
           <h3 className="text-md font-semibold text-gray-700 mb-3 flex items-center gap-2">
-            <Search className="w-4 h-4 text-purple-600" />
-            Find Student
+            <User className="w-4 h-4 text-purple-600" />
+            Find Student by ID
           </h3>
           <div className="flex gap-3">
             <input
-              type="email"
+              type="text"
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
-              placeholder="Enter student email"
+              placeholder="Enter Student ID (e.g., STU001 or 1)"
               className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
             <button
@@ -199,10 +218,11 @@ const AddResultForm = ({ onSuccess }) => {
                 Student Found
               </p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2 text-sm">
-                <p><span className="text-gray-500">Name:</span> <span className="font-medium">{student.name}</span></p>
-                <p><span className="text-gray-500">Email:</span> {student.email}</p>
-                <p><span className="text-gray-500">Class:</span> {student.student?.class} {student.student?.section}</p>
-                <p><span className="text-gray-500">Roll No:</span> {student.student?.rollNumber}</p>
+                <p><span className="text-gray-500">Student ID:</span> <span className="font-medium">{student.studentId || student.id}</span></p>
+                <p><span className="text-gray-500">Name:</span> <span className="font-medium">{student.name || student.user?.name}</span></p>
+                <p><span className="text-gray-500">Email:</span> {student.email || student.user?.email}</p>
+                <p><span className="text-gray-500">Class:</span> {student.class} {student.section}</p>
+                <p><span className="text-gray-500">Roll No:</span> {student.rollNumber}</p>
               </div>
             </div>
           )}
