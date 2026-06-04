@@ -214,46 +214,39 @@ const login = async (credentials) => {
   };
 
 // ============= LOGOUT (INSTANT WITH ALERTS) =============
+// In your AuthContext.jsx - Fix the logout function
 const logout = async () => {
-  console.log('🚪 Logout triggered');
-  console.log('📝 Current user before logout:', user?.email);
+  console.log('🚪 Logout initiated');
   
   try {
-    // Clear all local storage immediately
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('rememberMe');
-    console.log('✅ Local storage cleared');
-    
-    // Clear session storage
-    sessionStorage.clear();
-    console.log('✅ Session storage cleared');
-    
-    // Clear cookies
-    document.cookie.split(";").forEach(function(c) {
-      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-    });
-    console.log('✅ Cookies cleared');
-    
-    // Reset user state
-    setUser(null);
-    console.log('✅ User state reset to null');
-    
-    // Try API call in background (don't wait)
-    api.post('auth/logout').then(() => {
-      console.log('✅ Backend logout API called successfully');
-    }).catch((err) => {
-      console.warn('⚠️ Backend logout API failed (non-critical):', err.message);
+    // Try to call server logout (but don't wait too long)
+    const logoutPromise = fetch('/api/auth/logout', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
     });
     
-    console.log('✅ Logout completed successfully');
-    alert('👋 You have been successfully logged out!');
-    
-  } catch (error) {
-    console.error('❌ Logout error:', error);
-    alert('⚠️ Logout completed but with errors. You are safely logged out.');
-    setUser(null);
+    // Race between logout API and timeout (500ms)
+    await Promise.race([
+      logoutPromise,
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Logout timeout')), 500)
+      )
+    ]);
+  } catch (err) {
+    console.warn('Server logout failed, clearing local session anyway:', err.message);
   }
+  
+  // ALWAYS clear local data regardless of server response
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  setToken(null);
+  setUser(null);
+  setIsAuthenticated(false);
+  
+  console.log('✅ Local session cleared');
 };
 
   // ============= GET PROFILE =============
