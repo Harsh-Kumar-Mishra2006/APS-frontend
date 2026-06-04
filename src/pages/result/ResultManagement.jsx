@@ -4,7 +4,7 @@ import { FileText, Plus, Eye, Loader, X, CheckCircle, GraduationCap, Calendar, T
 import AddResultForm from '../../components/form/AddResultForm';
 import ViewResults from '../../components/view/ViewResults';
 import CreateExamForm from '../../components/form/CreateExamForm';
-import ViewExams from '../../components/view/ViewExams'; // ✅ Import new component
+import ViewExams from '../../components/view/viewExams'; // ✅ Import new component
 import api from '../../utils/api';
 
 const ResultManagement = () => {
