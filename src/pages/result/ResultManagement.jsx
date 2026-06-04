@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { FileText, Plus, Eye, Loader, X, CheckCircle, GraduationCap, Calendar, TrendingUp, Users, BookOpen, Award } from 'lucide-react';
+import { FileText, Plus, Eye, Loader, X, CheckCircle, GraduationCap, Calendar, TrendingUp, Users, BookOpen, Award, List } from 'lucide-react';
 import AddResultForm from '../../components/form/AddResultForm';
 import ViewResults from '../../components/view/ViewResults';
 import CreateExamForm from '../../components/form/CreateExamForm';
+import ViewExams from '../../components/view/ViewExams'; // ✅ Import new component
 import api from '../../utils/api';
 
 const ResultManagement = () => {
@@ -12,15 +13,16 @@ const ResultManagement = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   
-  // ✅ NEW: Shared exam list state
+  // Shared exam list state
   const [exams, setExams] = useState([]);
   const [examsLoading, setExamsLoading] = useState(false);
 
-  // ✅ Function to fetch exams (can be called from anywhere)
+  // Function to fetch exams
   const fetchExams = useCallback(async () => {
     setExamsLoading(true);
     try {
       const response = await api.get('results/exams');
+      console.log('Fetched exams:', response.data); // Debug log
       if (response.data.success) {
         setExams(response.data.data);
       }
@@ -31,27 +33,22 @@ const ResultManagement = () => {
     }
   }, []);
 
-  // ✅ Fetch exams when component mounts
+  // Fetch exams when component mounts
   useEffect(() => {
     fetchExams();
   }, [fetchExams]);
 
-  // ✅ Handle exam creation success - refresh the list
+  // Handle exam creation success
   const handleExamCreated = (message) => {
     setSuccessMessage(message);
     setShowSuccess(true);
-    fetchExams(); // 🔄 Refresh exam list immediately
-    
-    // Optional: Switch to add result tab after exam creation
-    // setTimeout(() => setActiveTab('add'), 1500);
+    fetchExams(); // Refresh exam list
   };
 
-  // ✅ Handle result addition success
+  // Handle result addition success
   const handleResultAdded = (message) => {
     setSuccessMessage(message);
     setShowSuccess(true);
-    // Optionally refresh exams if needed
-    // fetchExams();
   };
 
   if (loading || !authChecked) {
@@ -88,10 +85,12 @@ const ResultManagement = () => {
     );
   }
 
+  // ✅ Updated tabs with 4 options
   const tabs = [
     { id: 'add', label: 'Add Result', icon: Plus, color: 'purple', description: 'Add student exam results' },
-    { id: 'exams', label: 'Manage Exams', icon: GraduationCap, color: 'blue', description: 'Create and manage exams' },
-    { id: 'view', label: 'View Results', icon: Eye, color: 'green', description: 'View all published results' }
+    { id: 'create-exam', label: 'Create Exam', icon: GraduationCap, color: 'blue', description: 'Create new examinations' },
+    { id: 'view-exams', label: 'View Exams', icon: List, color: 'cyan', description: 'View all created exams' },
+    { id: 'view-results', label: 'View Results', icon: Eye, color: 'green', description: 'View all published results' }
   ];
 
   return (
@@ -115,7 +114,7 @@ const ResultManagement = () => {
               </p>
             </div>
             
-            {/* ✅ NEW: Exam count badge */}
+            {/* Exam count badge */}
             {exams.length > 0 && (
               <div className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
                 <span className="text-sm font-medium">
@@ -134,14 +133,15 @@ const ResultManagement = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Tab Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* Tab Cards - Updated with 4 columns */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             const colorGradients = {
               purple: 'from-purple-500 to-purple-600',
               blue: 'from-blue-500 to-blue-600',
+              cyan: 'from-cyan-500 to-cyan-600',
               green: 'from-green-500 to-green-600'
             };
             
@@ -203,8 +203,9 @@ const ResultManagement = () => {
               <div className={`w-2 h-2 rounded-full animate-pulse bg-${tabs.find(t => t.id === activeTab)?.color}-500`}></div>
               <span className="text-sm font-medium text-gray-600">
                 {activeTab === 'add' && 'Adding New Student Result'}
-                {activeTab === 'exams' && 'Managing Exams'}
-                {activeTab === 'view' && 'Viewing Results'}
+                {activeTab === 'create-exam' && 'Creating New Exam'}
+                {activeTab === 'view-exams' && 'Viewing All Exams'}
+                {activeTab === 'view-results' && 'Viewing Published Results'}
               </span>
             </div>
           </div>
@@ -212,18 +213,23 @@ const ResultManagement = () => {
           <div className="p-6 md:p-8">
             {activeTab === 'add' && (
               <AddResultForm 
-                exams={exams}           // ✅ Pass exams as prop
+                exams={exams}
                 examsLoading={examsLoading}
                 onSuccess={handleResultAdded}
-                onRefreshExams={fetchExams}  // ✅ Allow manual refresh if needed
+                onRefreshExams={fetchExams}
               />
             )}
-            {activeTab === 'exams' && (
+            {activeTab === 'create-exam' && (
               <CreateExamForm 
-                onSuccess={handleExamCreated}  // ✅ Will trigger refresh
+                onSuccess={handleExamCreated}
               />
             )}
-            {activeTab === 'view' && <ViewResults />}
+            {activeTab === 'view-exams' && (
+              <ViewExams />
+            )}
+            {activeTab === 'view-results' && (
+              <ViewResults />
+            )}
           </div>
         </div>
         

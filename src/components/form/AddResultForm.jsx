@@ -31,19 +31,26 @@ const AddResultForm = ({ onSuccess, exams: externalExams, examsLoading: external
     }
   }, [externalExams]);
 
-  const fetchExams = async () => {
-    setLocalExamsLoading(true);
-    try {
-      const response = await api.get('results/exams');
-      if (response.data.success) {
-        setLocalExams(response.data.data);
-      }
-    } catch (err) {
-      console.error('Error fetching exams:', err);
-    } finally {
-      setLocalExamsLoading(false);
+  // Add this right after the fetchExams function
+const fetchExams = async () => {
+  setLocalExamsLoading(true);
+  try {
+    const response = await api.get('results/exams');
+    console.log('🔍 API Response for exams:', response.data); // Debug log
+    
+    if (response.data.success) {
+      console.log('✅ Exams found:', response.data.data.length);
+      console.log('📝 Exam data structure:', response.data.data[0]); // See first exam
+      setLocalExams(response.data.data);
+    } else {
+      console.log('❌ No success in response');
     }
-  };
+  } catch (err) {
+    console.error('❌ Error fetching exams:', err);
+  } finally {
+    setLocalExamsLoading(false);
+  }
+};
 
   const searchStudent = async () => {
     if (!searchValue) {
