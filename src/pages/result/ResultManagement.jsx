@@ -1,15 +1,58 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { FileText, Plus, Eye, Loader, X, CheckCircle, GraduationCap, Calendar, TrendingUp, Users, BookOpen, Award } from 'lucide-react';
 import AddResultForm from '../../components/form/AddResultForm';
 import ViewResults from '../../components/view/ViewResults';
 import CreateExamForm from '../../components/form/CreateExamForm';
+import api from '../../utils/api';
 
 const ResultManagement = () => {
   const { user, loading, authChecked } = useAuth();
   const [activeTab, setActiveTab] = useState('add');
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  
+  // ✅ NEW: Shared exam list state
+  const [exams, setExams] = useState([]);
+  const [examsLoading, setExamsLoading] = useState(false);
+
+  // ✅ Function to fetch exams (can be called from anywhere)
+  const fetchExams = useCallback(async () => {
+    setExamsLoading(true);
+    try {
+      const response = await api.get('results/exams');
+      if (response.data.success) {
+        setExams(response.data.data);
+      }
+    } catch (err) {
+      console.error('Error fetching exams:', err);
+    } finally {
+      setExamsLoading(false);
+    }
+  }, []);
+
+  // ✅ Fetch exams when component mounts
+  useEffect(() => {
+    fetchExams();
+  }, [fetchExams]);
+
+  // ✅ Handle exam creation success - refresh the list
+  const handleExamCreated = (message) => {
+    setSuccessMessage(message);
+    setShowSuccess(true);
+    fetchExams(); // 🔄 Refresh exam list immediately
+    
+    // Optional: Switch to add result tab after exam creation
+    // setTimeout(() => setActiveTab('add'), 1500);
+  };
+
+  // ✅ Handle result addition success
+  const handleResultAdded = (message) => {
+    setSuccessMessage(message);
+    setShowSuccess(true);
+    // Optionally refresh exams if needed
+    // fetchExams();
+  };
 
   if (loading || !authChecked) {
     return (
@@ -72,6 +115,14 @@ const ResultManagement = () => {
               </p>
             </div>
             
+            {/* ✅ NEW: Exam count badge */}
+            {exams.length > 0 && (
+              <div className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
+                <span className="text-sm font-medium">
+                  📚 {exams.length} Total Exams
+                </span>
+              </div>
+            )}
           </div>
         </div>
         
@@ -159,8 +210,19 @@ const ResultManagement = () => {
           </div>
           
           <div className="p-6 md:p-8">
-            {activeTab === 'add' && <AddResultForm onSuccess={(msg) => { setSuccessMessage(msg); setShowSuccess(true); }} />}
-            {activeTab === 'exams' && <CreateExamForm onSuccess={(msg) => { setSuccessMessage(msg); setShowSuccess(true); }} />}
+            {activeTab === 'add' && (
+              <AddResultForm 
+                exams={exams}           // ✅ Pass exams as prop
+                examsLoading={examsLoading}
+                onSuccess={handleResultAdded}
+                onRefreshExams={fetchExams}  // ✅ Allow manual refresh if needed
+              />
+            )}
+            {activeTab === 'exams' && (
+              <CreateExamForm 
+                onSuccess={handleExamCreated}  // ✅ Will trigger refresh
+              />
+            )}
             {activeTab === 'view' && <ViewResults />}
           </div>
         </div>
