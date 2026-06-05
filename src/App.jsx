@@ -52,6 +52,7 @@ const App = () => {
               <Route path="/admissions" element={<AdmissionPage/>} />
               <Route path="/contact" element={<ContactPage/>} />
               <Route path="/gallery" element={<ContactForm/>} />
+              <Route path="/student-attendance" element={<StudentAttendancePage/>} />
               
               {/* ✅ CATCH-ALL ROUTE - MUST BE INSIDE <Routes> */}
               <Route path="*" element={<Navigate to="/" replace />} />
