@@ -1,56 +1,34 @@
+// src/components/form/AddResultForm.jsx (Updated)
 import React, { useState, useEffect } from 'react';
 import api from '../../utils/api';
-import { Loader, Search, Plus, Trash2, AlertCircle, Send, GraduationCap, BookOpen, Award, User, RefreshCw } from 'lucide-react';
+import { Loader, Search, Plus, Calendar, Trash2, AlertCircle, Send, GraduationCap, BookOpen, Award, User, RefreshCw } from 'lucide-react';
 
 const AddResultForm = ({ onSuccess, exams: externalExams, examsLoading: externalExamsLoading, onRefreshExams }) => {
   const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [error, setError] = useState('');
   const [student, setStudent] = useState(null);
-  // ✅ Use exams from props instead of internal state
-  const [selectedExam, setSelectedExam] = useState('');
+  const [selectedExamType, setSelectedExamType] = useState('');
+  const [selectedExamYear, setSelectedExamYear] = useState(new Date().getFullYear());
   const [searchValue, setSearchValue] = useState('');
-  const [subjects, setSubjects] = useState([
-    { subject: '', totalMarks: '100', passingMarks: '33', scoredMarks: '' }
-  ]);
+  const [subjects, setSubjects] = useState([]);
   const [remarks, setRemarks] = useState('');
   const [rank, setRank] = useState('');
   
-  // ✅ Local loading state for when props aren't available
   const [localExamsLoading, setLocalExamsLoading] = useState(false);
-  const [localExams, setLocalExams] = useState([]);
-
-  // ✅ Use external exams if provided, otherwise fetch locally (backward compatibility)
-  const exams = externalExams || localExams;
+  const [examTypes, setExamTypes] = useState([]);
+  
+  // Use external exams if provided
+  const exams = externalExams || [];
   const isLoading = externalExamsLoading !== undefined ? externalExamsLoading : localExamsLoading;
 
-  // ✅ Only fetch locally if no external exams provided
+  // Get unique exam types from exams list
   useEffect(() => {
-    if (!externalExams) {
-      fetchExams();
+    if (exams.length > 0) {
+      const uniqueTypes = [...new Set(exams.map(exam => exam.examType))];
+      setExamTypes(uniqueTypes);
     }
-  }, [externalExams]);
-
-  // Add this right after the fetchExams function
-const fetchExams = async () => {
-  setLocalExamsLoading(true);
-  try {
-    const response = await api.get('results/exams');
-    console.log('🔍 API Response for exams:', response.data); // Debug log
-    
-    if (response.data.success) {
-      console.log('✅ Exams found:', response.data.data.length);
-      console.log('📝 Exam data structure:', response.data.data[0]); // See first exam
-      setLocalExams(response.data.data);
-    } else {
-      console.log('❌ No success in response');
-    }
-  } catch (err) {
-    console.error('❌ Error fetching exams:', err);
-  } finally {
-    setLocalExamsLoading(false);
-  }
-};
+  }, [exams]);
 
   const searchStudent = async () => {
     if (!searchValue) {
@@ -79,7 +57,7 @@ const fetchExams = async () => {
         
         if (foundStudent) {
           const studentProfile = foundStudent.Student || foundStudent.student || {};
-          setStudent({
+          const studentData = {
             id: foundStudent.id,
             studentId: studentProfile.studentId || foundStudent.id.toString(),
             name: foundStudent.name,
@@ -88,7 +66,11 @@ const fetchExams = async () => {
             section: studentProfile.section || 'N/A',
             rollNumber: studentProfile.rollNumber || 'N/A',
             user: foundStudent
-          });
+          };
+          setStudent(studentData);
+          
+          // Initialize subjects based on student's class
+          initializeSubjectsForClass(studentData.class);
           setError('');
         } else {
           setError('Student not found. Check ID, email, or name.');
@@ -105,6 +87,26 @@ const fetchExams = async () => {
     } finally {
       setSearchLoading(false);
     }
+  };
+
+  const initializeSubjectsForClass = (className) => {
+    const classNum = parseInt(className);
+    let subjectList = [];
+    
+    if (classNum <= 5) {
+      subjectList = ['English', 'Mathematics', 'Science', 'Social Studies', 'General Knowledge', 'Computer Science'];
+    } else if (classNum <= 8) {
+      subjectList = ['English', 'Mathematics', 'Science', 'Social Studies', 'Sanskrit/Hindi', 'Computer Science'];
+    } else {
+      subjectList = ['English', 'Mathematics', 'Physics', 'Chemistry', 'Biology', 'History', 'Geography', 'Computer Science'];
+    }
+    
+    setSubjects(subjectList.map(subject => ({
+      subject: subject,
+      totalMarks: 100,
+      passingMarks: 33,
+      scoredMarks: ''
+    })));
   };
 
   const addSubject = () => {
@@ -141,8 +143,8 @@ const fetchExams = async () => {
       return;
     }
 
-    if (!selectedExam) {
-      setError('Please select an exam');
+    if (!selectedExamType) {
+      setError('Please select an exam type');
       return;
     }
 
@@ -164,25 +166,26 @@ const fetchExams = async () => {
 
     try {
       const payload = {
-        studentId: student.id,
-        examId: parseInt(selectedExam),
+        studentId: student.studentId, // Use school ID instead of database ID
+        examType: selectedExamType,
+        examYear: selectedExamYear,
         subjects: formattedSubjects,
         rank: rank ? parseInt(rank) : null,
         remarks: remarks || null
       };
 
-      const response = await api.post('results/add-by-id', payload);
+      const response = await api.post('results/add-by-exam-type', payload);
 
       if (response.data.success) {
         setStudent(null);
         setSearchValue('');
-        setSelectedExam('');
-        setSubjects([{ subject: '', totalMarks: '100', passingMarks: '33', scoredMarks: '' }]);
+        setSelectedExamType('');
+        setSubjects([]);
         setRemarks('');
         setRank('');
         
         if (onSuccess) {
-          onSuccess(`Result for ${student.name} added successfully!`);
+          onSuccess(`Result for ${student.name} in ${selectedExamType} added successfully!`);
         }
       }
     } catch (err) {
@@ -195,11 +198,8 @@ const fetchExams = async () => {
 
   const { totalObtained, totalMax } = calculateAutoTotal();
   const autoPercentage = totalMax > 0 ? ((totalObtained / totalMax) * 100).toFixed(2) : 0;
-
-  // ✅ Helper to get exam display text
-  const getExamDisplayText = (exam) => {
-    return `${exam.examType} - ${exam.examYear}${exam.term ? ` (${exam.term})` : ''}`;
-  };
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 5 }, (_, i) => currentYear + i);
 
   return (
     <div className="max-h-[80vh] overflow-y-auto px-2">
@@ -261,64 +261,81 @@ const fetchExams = async () => {
           )}
         </div>
 
-        {/* Select Exam - WITH REFRESH BUTTON */}
-        <div>
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="text-md font-semibold text-gray-700 flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-purple-600" />
-              Select Exam
-            </h3>
+        {/* Select Exam Type and Year */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-md font-semibold text-gray-700 flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-purple-600" />
+                Select Exam Type
+              </h3>
+              {onRefreshExams && (
+                <button
+                  type="button"
+                  onClick={onRefreshExams}
+                  disabled={isLoading}
+                  className="text-sm text-purple-600 hover:text-purple-700 flex items-center gap-1 transition"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                  Refresh
+                </button>
+              )}
+            </div>
             
-            {/* ✅ Refresh button to manually reload exams */}
-            {onRefreshExams && (
-              <button
-                type="button"
-                onClick={onRefreshExams}
-                disabled={isLoading}
-                className="text-sm text-purple-600 hover:text-purple-700 flex items-center gap-1 transition"
-              >
-                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-                Refresh
-              </button>
-            )}
+            <select
+              value={selectedExamType}
+              onChange={(e) => setSelectedExamType(e.target.value)}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 bg-white"
+              required
+              disabled={isLoading}
+            >
+              <option value="">-- Choose Exam Type --</option>
+              {examTypes.map(type => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
           </div>
-          
-          <select
-            value={selectedExam}
-            onChange={(e) => setSelectedExam(e.target.value)}
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 bg-white"
-            required
-            disabled={isLoading}
-          >
-            <option value="">-- Choose Exam --</option>
-            {exams.map(exam => (
-              <option key={exam.id} value={exam.id}>
-                {getExamDisplayText(exam)}
-              </option>
-            ))}
-          </select>
-          
-          {/* ✅ Show loading or empty state */}
-          {isLoading && (
-            <p className="text-sm text-gray-500 mt-2 flex items-center gap-2">
-              <Loader className="w-3 h-3 animate-spin" />
-              Loading exams...
-            </p>
-          )}
-          
-          {!isLoading && exams.length === 0 && (
-            <p className="text-sm text-amber-600 mt-2 flex items-center gap-2">
-              <AlertCircle className="w-3 h-3" />
-              No exams found. Please create an exam first in the "Manage Exams" tab.
-            </p>
-          )}
-          
-          {!isLoading && exams.length > 0 && (
-            <p className="text-xs text-green-600 mt-2">
-              ✓ {exams.length} exam(s) available
-            </p>
-          )}
+
+          <div>
+            <h3 className="text-md font-semibold text-gray-700 mb-3 flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-purple-600" />
+              Academic Year
+            </h3>
+            <select
+              value={selectedExamYear}
+              onChange={(e) => setSelectedExamYear(parseInt(e.target.value))}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 bg-white"
+              required
+            >
+              {years.map(year => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          </div>
         </div>
+        
+        {/* Show loading or empty state */}
+        {isLoading && (
+          <p className="text-sm text-gray-500 mt-2 flex items-center gap-2">
+            <Loader className="w-3 h-3 animate-spin" />
+            Loading exam types...
+          </p>
+        )}
+        
+        {!isLoading && examTypes.length === 0 && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+            <p className="text-sm text-amber-700 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4" />
+              No exams found. Please initialize exams for the current year.
+            </p>
+          </div>
+        )}
+        
+        {!isLoading && examTypes.length > 0 && (
+          <p className="text-xs text-green-600">
+            ✓ {examTypes.length} exam type(s) available
+          </p>
+        )}
 
         {/* Subjects */}
         <div>
@@ -432,7 +449,7 @@ const fetchExams = async () => {
 
         <button
           type="submit"
-          disabled={loading || !student || !selectedExam || exams.length === 0}
+          disabled={loading || !student || !selectedExamType || examTypes.length === 0}
           className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg"
         >
           {loading ? <Loader className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}

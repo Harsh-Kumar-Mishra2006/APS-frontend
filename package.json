@@ -10,18 +10,22 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ant-design/charts": "^2.0.0",
     "@date-io/date-fns": "^3.2.1",
     "@mui/x-date-pickers": "^8.21.0",
+    "antd": "^5.12.0",
     "axios": "^1.13.2",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.34.3",
     "lucide-react": "^0.555.0",
+    "moment": "^2.29.4",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-hot-toast": "^2.6.0",
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.9.6",
-    "react-toastify": "^11.1.0"
+    "react-toastify": "^11.1.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

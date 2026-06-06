@@ -1,0 +1,72 @@
+/* src/pages/attendance/AttendanceStyles.css */
+.attendance-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 400px;
+}
+
+.student-attendance-tracker,
+.teacher-attendance-tracker,
+.parent-attendance-view {
+  padding: 24px;
+  background: #f0f2f5;
+  min-height: 100vh;
+}
+
+.attendance-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.attendance-header h1 {
+  color: white;
+  margin-bottom: 8px;
+}
+
+.attendance-header p {
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .student-attendance-tracker,
+  .teacher-attendance-tracker,
+  .parent-attendance-view {
+    padding: 12px;
+  }
+
+  .ant-statistic-title {
+    font-size: 12px;
+  }
+
+  .ant-statistic-content {
+    font-size: 18px;
+  }
+}
+
+/* Progress bar customization */
+.ant-progress-circle .ant-progress-text {
+  font-size: 12px;
+}
+
+/* Timeline customization */
+.ant-timeline-item-label {
+  width: calc(25% - 12px);
+}
+
+/* Table customization */
+.ant-table-tbody > tr > td {
+  padding: 12px 8px;
+}
+
+/* Card hover effects */
+.ant-card-hoverable {
+  transition: all 0.3s ease;
+}
+
+.ant-card-hoverable:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}

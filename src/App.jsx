@@ -23,12 +23,15 @@ import ResultManagement from './pages/result/ResultManagement'
 import ContactForm from './pages/Form/contactForm'
 import StudentAttendancePage from './pages/Attendance/StudentAttendencePage'
 import TeacherAttendancePage from './pages/Attendance/TeacherAttendancePage'
+import StudentAttendanceTracker from './pages/student/StudentAttendanceTracker'
+import TeacherAttendanceTracker from './pages/teacher/TeacherAttedanceTracker'
 
 const App = () => {
   return (
     <Router>
       <AuthProvider>
         <div className="min-h-screen flex flex-col">
+
           <Navbar/>
           <main className="flex-grow">
             <Routes>
@@ -53,6 +56,9 @@ const App = () => {
               <Route path="/contact" element={<ContactPage/>} />
               <Route path="/gallery" element={<ContactForm/>} />
               <Route path="/student-attendance" element={<StudentAttendancePage/>} />
+              <Route path="/student-attendance-tracker" element={<StudentAttendanceTracker/>} />
+              <Route path="/teacher-attendance-tracker" element={<TeacherAttendanceTracker/>} />  
+
               
               {/* ✅ CATCH-ALL ROUTE - MUST BE INSIDE <Routes> */}
               <Route path="*" element={<Navigate to="/" replace />} />

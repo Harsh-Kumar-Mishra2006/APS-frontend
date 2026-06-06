@@ -57,6 +57,11 @@ const Navbar = () => {
 
     const teacherItems = [
       { name: 'Student Attendance', href: '/student-attendance', icon: CalendarCheck },
+      { name: 'My Attendance', href: '/teacher-attendance-tracker', icon: LayoutDashboard },
+    ];
+
+    const studentItems = [
+      { name: 'My Attendance', href: '/student-attendance-tracker', icon: CalendarCheck },
     ];
 
     if (user?.role === 'admin') {

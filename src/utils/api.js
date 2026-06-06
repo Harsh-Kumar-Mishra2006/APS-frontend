@@ -1,4 +1,4 @@
-// src/utils/api.js
+// src/utils/api.js (CREATE THIS FILE)
 import axios from 'axios';
 
 // Change this to your local backend URL
@@ -18,11 +18,12 @@ api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
 
+    // Ensure URL starts with /api
     if (!config.url.startsWith('/api/') && !config.url.startsWith('http')) {
       config.url = '/api/' + config.url;
     }
 
-    // ✅ Remove double slashes (fixes /api//endpoint)
+    // Remove double slashes
     config.url = config.url.replace(/\/\//g, '/');
 
     console.log('🌐 API Request:', {
