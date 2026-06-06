@@ -1,9 +1,9 @@
-// src/components/form/AddResultForm.jsx (Updated)
+// src/components/form/AddResultForm.jsx (FIXED VERSION)
 import React, { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import { Loader, Search, Plus, Calendar, Trash2, AlertCircle, Send, GraduationCap, BookOpen, Award, User, RefreshCw } from 'lucide-react';
 
-const AddResultForm = ({ onSuccess, exams: externalExams, examsLoading: externalExamsLoading, onRefreshExams }) => {
+const AddResultForm = ({ onSuccess, onRefreshExams }) => {
   const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [error, setError] = useState('');
@@ -15,20 +15,32 @@ const AddResultForm = ({ onSuccess, exams: externalExams, examsLoading: external
   const [remarks, setRemarks] = useState('');
   const [rank, setRank] = useState('');
   
-  const [localExamsLoading, setLocalExamsLoading] = useState(false);
   const [examTypes, setExamTypes] = useState([]);
-  
-  // Use external exams if provided
-  const exams = externalExams || [];
-  const isLoading = externalExamsLoading !== undefined ? externalExamsLoading : localExamsLoading;
+  const [examTypesLoading, setExamTypesLoading] = useState(false);
 
-  // Get unique exam types from exams list
-  useEffect(() => {
-    if (exams.length > 0) {
-      const uniqueTypes = [...new Set(exams.map(exam => exam.examType))];
-      setExamTypes(uniqueTypes);
+  // Fetch available exam types from backend
+  const fetchExamTypes = async () => {
+    setExamTypesLoading(true);
+    try {
+      const response = await api.get('results/exam-types');
+      console.log('Exam types response:', response.data);
+      if (response.data.success) {
+        setExamTypes(response.data.data);
+      } else {
+        setError('Failed to load exam types');
+      }
+    } catch (err) {
+      console.error('Error fetching exam types:', err);
+      setError(err.response?.data?.error || 'Failed to load exam types');
+    } finally {
+      setExamTypesLoading(false);
     }
-  }, [exams]);
+  };
+
+  // Load exam types on component mount
+  useEffect(() => {
+    fetchExamTypes();
+  }, []);
 
   const searchStudent = async () => {
     if (!searchValue) {
@@ -166,7 +178,7 @@ const AddResultForm = ({ onSuccess, exams: externalExams, examsLoading: external
 
     try {
       const payload = {
-        studentId: student.studentId, // Use school ID instead of database ID
+        studentId: student.studentId,
         examType: selectedExamType,
         examYear: selectedExamYear,
         subjects: formattedSubjects,
@@ -177,6 +189,7 @@ const AddResultForm = ({ onSuccess, exams: externalExams, examsLoading: external
       const response = await api.post('results/add-by-exam-type', payload);
 
       if (response.data.success) {
+        // Reset form
         setStudent(null);
         setSearchValue('');
         setSelectedExamType('');
@@ -187,6 +200,9 @@ const AddResultForm = ({ onSuccess, exams: externalExams, examsLoading: external
         if (onSuccess) {
           onSuccess(`Result for ${student.name} in ${selectedExamType} added successfully!`);
         }
+        
+        // Refresh exam types if needed
+        fetchExamTypes();
       }
     } catch (err) {
       console.error('Submit error:', err);
@@ -269,17 +285,15 @@ const AddResultForm = ({ onSuccess, exams: externalExams, examsLoading: external
                 <BookOpen className="w-4 h-4 text-purple-600" />
                 Select Exam Type
               </h3>
-              {onRefreshExams && (
-                <button
-                  type="button"
-                  onClick={onRefreshExams}
-                  disabled={isLoading}
-                  className="text-sm text-purple-600 hover:text-purple-700 flex items-center gap-1 transition"
-                >
-                  <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-                  Refresh
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={fetchExamTypes}
+                disabled={examTypesLoading}
+                className="text-sm text-purple-600 hover:text-purple-700 flex items-center gap-1 transition"
+              >
+                <RefreshCw className={`w-4 h-4 ${examTypesLoading ? 'animate-spin' : ''}`} />
+                Refresh
+              </button>
             </div>
             
             <select
@@ -287,7 +301,7 @@ const AddResultForm = ({ onSuccess, exams: externalExams, examsLoading: external
               onChange={(e) => setSelectedExamType(e.target.value)}
               className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 bg-white"
               required
-              disabled={isLoading}
+              disabled={examTypesLoading}
             >
               <option value="">-- Choose Exam Type --</option>
               {examTypes.map(type => (
@@ -315,23 +329,23 @@ const AddResultForm = ({ onSuccess, exams: externalExams, examsLoading: external
         </div>
         
         {/* Show loading or empty state */}
-        {isLoading && (
+        {examTypesLoading && (
           <p className="text-sm text-gray-500 mt-2 flex items-center gap-2">
             <Loader className="w-3 h-3 animate-spin" />
             Loading exam types...
           </p>
         )}
         
-        {!isLoading && examTypes.length === 0 && (
+        {!examTypesLoading && examTypes.length === 0 && (
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
             <p className="text-sm text-amber-700 flex items-center gap-2">
               <AlertCircle className="w-4 h-4" />
-              No exams found. Please initialize exams for the current year.
+              No exam types found. Please initialize exams first.
             </p>
           </div>
         )}
         
-        {!isLoading && examTypes.length > 0 && (
+        {!examTypesLoading && examTypes.length > 0 && (
           <p className="text-xs text-green-600">
             ✓ {examTypes.length} exam type(s) available
           </p>

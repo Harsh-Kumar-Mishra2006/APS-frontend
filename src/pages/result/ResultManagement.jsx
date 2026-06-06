@@ -211,14 +211,12 @@ const ResultManagement = () => {
           </div>
           
           <div className="p-6 md:p-8">
-            {activeTab === 'add' && (
-              <AddResultForm 
-                exams={exams}
-                examsLoading={examsLoading}
-                onSuccess={handleResultAdded}
-                onRefreshExams={fetchExams}
-              />
+           {activeTab === 'add' && (
+            <AddResultForm 
+               onSuccess={handleResultAdded}
+            />
             )}
+
             {activeTab === 'create-exam' && (
               <CreateExamForm 
                 onSuccess={handleExamCreated}
