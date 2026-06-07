@@ -1,6 +1,7 @@
+// src/components/fee/AddFeeForm.jsx
 import React, { useState } from 'react';
 import api from '../../utils/api';
-import { X, Loader, DollarSign, Calendar, Search, AlertCircle } from 'lucide-react';
+import { X, Loader, DollarSign, Calendar, Search, AlertCircle, Plus, Trash2 } from 'lucide-react';
 
 const AddFeeForm = ({ onSuccess, onCancel }) => {
   const [loading, setLoading] = useState(false);
@@ -8,19 +9,12 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
   const [error, setError] = useState('');
   const [student, setStudent] = useState(null);
   const [searchValue, setSearchValue] = useState('');
+  const [feeComponents, setFeeComponents] = useState([
+    { name: 'Tuition Fee', amount: '' }
+  ]);
   const [formData, setFormData] = useState({
-    currentMonth: '',
-    currentYear: new Date().getFullYear(),
-    pendingFrom: '',
-    pendingFromYear: new Date().getFullYear(),
-    monthsPending: 1,
-    monthlyFee: '',
-    transportFee: '',
-    examFee: '',
-    tuitionFee: '',
-    lateFee: '',
-    totalAmount: '',
-    amountInWords: '',
+    feeMonth: '',
+    feeYear: new Date().getFullYear(),
     dueDate: '',
     remarks: ''
   });
@@ -35,7 +29,7 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
 
   const searchStudent = async () => {
     if (!searchValue) {
-      setError('Please enter student email');
+      setError('Please enter student ID, email, or name');
       return;
     }
 
@@ -43,17 +37,22 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
     setError('');
     
     try {
+      // Search by student ID, email, or name
       const response = await api.get('auth/users?role=student');
       if (response.data.success) {
-        const foundStudent = response.data.data.find(
-          s => s.email.toLowerCase() === searchValue.toLowerCase()
+        const searchTerm = searchValue.toLowerCase();
+        const foundStudent = response.data.data.find(s => 
+          s.email?.toLowerCase() === searchTerm ||
+          s.name?.toLowerCase().includes(searchTerm) ||
+          s.student?.studentId?.toLowerCase() === searchTerm ||
+          s.student?.rollNumber?.toString() === searchTerm
         );
         
         if (foundStudent) {
           setStudent(foundStudent);
           setError('');
         } else {
-          setError('Student not found with this email');
+          setError('Student not found. Please check ID, email, or name.');
           setStudent(null);
         }
       }
@@ -64,25 +63,31 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
     }
   };
 
-  const calculateTotal = () => {
-    const monthlyFee = parseFloat(formData.monthlyFee) || 0;
-    const transportFee = parseFloat(formData.transportFee) || 0;
-    const examFee = parseFloat(formData.examFee) || 0;
-    const tuitionFee = parseFloat(formData.tuitionFee) || 0;
-    const lateFee = parseFloat(formData.lateFee) || 0;
-    
-    const total = monthlyFee + transportFee + examFee + tuitionFee + lateFee;
-    setFormData({ ...formData, totalAmount: total.toString() });
+  const addFeeComponent = () => {
+    setFeeComponents([...feeComponents, { name: '', amount: '' }]);
+  };
+
+  const removeFeeComponent = (index) => {
+    if (feeComponents.length > 1) {
+      setFeeComponents(feeComponents.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateFeeComponent = (index, field, value) => {
+    const updated = [...feeComponents];
+    updated[index][field] = value;
+    setFeeComponents(updated);
+  };
+
+  const calculateTotalAmount = () => {
+    return feeComponents.reduce((sum, component) => {
+      return sum + (parseFloat(component.amount) || 0);
+    }, 0);
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    
-    // Recalculate total when any fee field changes
-    if (['monthlyFee', 'transportFee', 'examFee', 'tuitionFee', 'lateFee'].includes(name)) {
-      setTimeout(calculateTotal, 0);
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -93,8 +98,8 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
       return;
     }
     
-    if (!formData.currentMonth) {
-      setError('Please select current month');
+    if (!formData.feeMonth) {
+      setError('Please select fee month');
       return;
     }
     
@@ -103,9 +108,15 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
       return;
     }
     
-    const totalAmount = parseFloat(formData.totalAmount);
-    if (isNaN(totalAmount) || totalAmount <= 0) {
-      setError('Please enter valid fee amounts');
+    const validComponents = feeComponents.filter(c => c.name && c.amount);
+    if (validComponents.length === 0) {
+      setError('Please add at least one fee component with amount');
+      return;
+    }
+    
+    const totalAmount = calculateTotalAmount();
+    if (totalAmount <= 0) {
+      setError('Total amount must be greater than 0');
       return;
     }
     
@@ -114,42 +125,25 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
     
     try {
       const payload = {
-        email: student.email,
-        currentMonth: formData.currentMonth,
-        currentYear: parseInt(formData.currentYear),
-        pendingFrom: formData.pendingFrom || formData.currentMonth,
-        pendingFromYear: parseInt(formData.pendingFromYear) || parseInt(formData.currentYear),
-        monthsPending: parseInt(formData.monthsPending) || 1,
-        monthlyFee: parseFloat(formData.monthlyFee) || 0,
-        transportFee: parseFloat(formData.transportFee) || 0,
-        examFee: parseFloat(formData.examFee) || 0,
-        tuitionFee: parseFloat(formData.tuitionFee) || 0,
-        lateFee: parseFloat(formData.lateFee) || 0,
-        totalAmount: parseFloat(formData.totalAmount),
-        amountInWords: formData.amountInWords || '',
+        studentId: student.student?.studentId || student.id.toString(),
+        feeComponents: validComponents.map(c => ({
+          name: c.name,
+          amount: parseFloat(c.amount)
+        })),
+        feeMonth: formData.feeMonth,
+        feeYear: parseInt(formData.feeYear),
         dueDate: formData.dueDate,
         remarks: formData.remarks || ''
       };
       
-      console.log('Sending payload:', payload);
-      
-      const response = await api.post('fee/add-by-email', payload);
+      const response = await api.post('fee/add', payload);
       
       if (response.data.success) {
         // Reset form
+        setFeeComponents([{ name: 'Tuition Fee', amount: '' }]);
         setFormData({
-          currentMonth: '',
-          currentYear: new Date().getFullYear(),
-          pendingFrom: '',
-          pendingFromYear: new Date().getFullYear(),
-          monthsPending: 1,
-          monthlyFee: '',
-          transportFee: '',
-          examFee: '',
-          tuitionFee: '',
-          lateFee: '',
-          totalAmount: '',
-          amountInWords: '',
+          feeMonth: '',
+          feeYear: new Date().getFullYear(),
           dueDate: '',
           remarks: ''
         });
@@ -158,8 +152,8 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
         
         if (onSuccess) {
           onSuccess(
-            `Fee record added for ${student.name}`,
-            response.data.data.fee
+            `Fee record added successfully for ${student.name}`,
+            response.data.data
           );
         }
       }
@@ -170,6 +164,8 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
       setLoading(false);
     }
   };
+
+  const totalAmount = calculateTotalAmount();
 
   return (
     <div>
@@ -196,10 +192,10 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
           
           <div className="flex gap-3">
             <input
-              type="email"
+              type="text"
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
-              placeholder="Enter student email"
+              placeholder="Enter Student ID, Email, or Name"
               className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
             />
             <button
@@ -215,12 +211,13 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
           
           {student && (
             <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p className="font-semibold text-green-800">✅ {student.name}</p>
+              <p className="font-semibold text-green-800">✅ Student Found</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2 text-sm">
+                <p><span className="text-gray-600">Name:</span> {student.name}</p>
+                <p><span className="text-gray-600">Student ID:</span> {student.student?.studentId || 'N/A'}</p>
+                <p><span className="text-gray-600">Class:</span> {student.student?.class || 'N/A'} {student.student?.section || ''}</p>
+                <p><span className="text-gray-600">Roll No:</span> {student.student?.rollNumber || 'N/A'}</p>
                 <p><span className="text-gray-600">Email:</span> {student.email}</p>
-                <p><span className="text-gray-600">Class:</span> {student.student?.class} {student.student?.section}</p>
-                <p><span className="text-gray-600">Roll No:</span> {student.student?.rollNumber}</p>
-                <p><span className="text-gray-600">Student ID:</span> {student.student?.studentId}</p>
               </div>
             </div>
           )}
@@ -231,10 +228,10 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
           <h3 className="text-lg font-semibold text-gray-700 mb-3">2. Fee Period</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-gray-700 font-medium mb-2">Current Month *</label>
+              <label className="block text-gray-700 font-medium mb-2">Fee Month *</label>
               <select
-                name="currentMonth"
-                value={formData.currentMonth}
+                name="feeMonth"
+                value={formData.feeMonth}
                 onChange={handleInputChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                 required
@@ -247,10 +244,10 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
             </div>
             
             <div>
-              <label className="block text-gray-700 font-medium mb-2">Current Year *</label>
+              <label className="block text-gray-700 font-medium mb-2">Fee Year *</label>
               <select
-                name="currentYear"
-                value={formData.currentYear}
+                name="feeYear"
+                value={formData.feeYear}
                 onChange={handleInputChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                 required
@@ -263,140 +260,69 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
           </div>
         </div>
 
-        {/* Fee Details Section */}
+        {/* Fee Components Section */}
         <div className="border-b pb-4">
-          <h3 className="text-lg font-semibold text-gray-700 mb-3">3. Fee Details</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Monthly Fee</label>
-              <input
-                type="number"
-                name="monthlyFee"
-                value={formData.monthlyFee}
-                onChange={handleInputChange}
-                placeholder="0"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-              />
-            </div>
+          <h3 className="text-lg font-semibold text-gray-700 mb-3">3. Fee Components</h3>
+          <div className="space-y-3">
+            {feeComponents.map((component, index) => (
+              <div key={index} className="flex gap-3 items-start">
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    value={component.name}
+                    onChange={(e) => updateFeeComponent(index, 'name', e.target.value)}
+                    placeholder="Fee Name (e.g., Tuition Fee, Transport Fee)"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+                <div className="w-40">
+                  <input
+                    type="number"
+                    value={component.amount}
+                    onChange={(e) => updateFeeComponent(index, 'amount', e.target.value)}
+                    placeholder="Amount (₹)"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+                {feeComponents.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeFeeComponent(index)}
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
+            ))}
             
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Transport Fee</label>
-              <input
-                type="number"
-                name="transportFee"
-                value={formData.transportFee}
-                onChange={handleInputChange}
-                placeholder="0"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Exam Fee</label>
-              <input
-                type="number"
-                name="examFee"
-                value={formData.examFee}
-                onChange={handleInputChange}
-                placeholder="0"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Tuition Fee</label>
-              <input
-                type="number"
-                name="tuitionFee"
-                value={formData.tuitionFee}
-                onChange={handleInputChange}
-                placeholder="0"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Late Fee</label>
-              <input
-                type="number"
-                name="lateFee"
-                value={formData.lateFee}
-                onChange={handleInputChange}
-                placeholder="0"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Total Amount *</label>
-              <input
-                type="number"
-                name="totalAmount"
-                value={formData.totalAmount}
-                onChange={handleInputChange}
-                placeholder="Total Amount"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 font-bold"
-                required
-                readOnly
-              />
-            </div>
+            <button
+              type="button"
+              onClick={addFeeComponent}
+              className="text-green-600 hover:text-green-700 flex items-center gap-2 text-sm font-medium"
+            >
+              <Plus className="w-4 h-4" />
+              Add Another Fee Component
+            </button>
           </div>
-        </div>
 
-        {/* Pending Period Section */}
-        <div className="border-b pb-4">
-          <h3 className="text-lg font-semibold text-gray-700 mb-3">4. Pending Period (Optional)</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Pending From Month</label>
-              <select
-                name="pendingFrom"
-                value={formData.pendingFrom}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-              >
-                <option value="">Same as Current</option>
-                {months.map(month => (
-                  <option key={month} value={month}>{month}</option>
-                ))}
-              </select>
+          {/* Total Amount Display */}
+          {totalAmount > 0 && (
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-gray-700">Total Amount:</span>
+                <span className="text-2xl font-bold text-blue-600">₹{totalAmount.toLocaleString()}</span>
+              </div>
             </div>
-            
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Pending From Year</label>
-              <select
-                name="pendingFromYear"
-                value={formData.pendingFromYear}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-              >
-                {years.map(year => (
-                  <option key={year} value={year}>{year}</option>
-                ))}
-              </select>
-            </div>
-            
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Months Pending</label>
-              <input
-                type="number"
-                name="monthsPending"
-                value={formData.monthsPending}
-                onChange={handleInputChange}
-                min="1"
-                max="12"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-              />
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Due Date Section */}
         <div className="border-b pb-4">
-          <h3 className="text-lg font-semibold text-gray-700 mb-3">5. Payment Details</h3>
+          <h3 className="text-lg font-semibold text-gray-700 mb-3">4. Payment Details</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-gray-700 font-medium mb-2 items-center gap-2">
+              <label className=" text-gray-700 font-medium mb-2 flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
                 Due Date *
               </label>
@@ -405,20 +331,8 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
                 name="dueDate"
                 value={formData.dueDate}
                 onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                 required
-              />
-            </div>
-            
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Amount in Words (Optional)</label>
-              <input
-                type="text"
-                name="amountInWords"
-                value={formData.amountInWords}
-                onChange={handleInputChange}
-                placeholder="e.g., Rupees Five Thousand Only"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
               />
             </div>
           </div>
@@ -426,13 +340,13 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
 
         {/* Remarks Section */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-700 mb-3">6. Additional Information</h3>
+          <h3 className="text-lg font-semibold text-gray-700 mb-3">5. Additional Information</h3>
           <textarea
             name="remarks"
             value={formData.remarks}
             onChange={handleInputChange}
             rows="3"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
             placeholder="Any additional notes or remarks about this fee record..."
           />
         </div>
