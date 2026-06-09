@@ -1,7 +1,7 @@
-// src/components/form/AddResultForm.jsx (FIXED VERSION)
+// src/components/form/AddResultForm.jsx (TABULAR UI VERSION)
 import React, { useState, useEffect } from 'react';
 import api from '../../utils/api';
-import { Loader, Search, Plus, Calendar, Trash2, AlertCircle, Send, GraduationCap, BookOpen, Award, User, RefreshCw } from 'lucide-react';
+import { Loader, Search, Plus, Calendar, Trash2, AlertCircle, Send, GraduationCap, BookOpen, Award, User, RefreshCw, Minus, TrendingUp, TrendingDown } from 'lucide-react';
 
 const AddResultForm = ({ onSuccess, onRefreshExams }) => {
   const [loading, setLoading] = useState(false);
@@ -147,6 +147,21 @@ const AddResultForm = ({ onSuccess, onRefreshExams }) => {
     return { totalObtained, totalMax };
   };
 
+  const calculatePassingStatus = () => {
+    let failedSubjects = [];
+    subjects.forEach(sub => {
+      const scored = parseInt(sub.scoredMarks) || 0;
+      const passing = parseInt(sub.passingMarks) || 33;
+      if (scored < passing) {
+        failedSubjects.push(sub.subject || 'Unknown Subject');
+      }
+    });
+    return {
+      isPass: failedSubjects.length === 0,
+      failedSubjects: failedSubjects
+    };
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -214,17 +229,33 @@ const AddResultForm = ({ onSuccess, onRefreshExams }) => {
 
   const { totalObtained, totalMax } = calculateAutoTotal();
   const autoPercentage = totalMax > 0 ? ((totalObtained / totalMax) * 100).toFixed(2) : 0;
+  const passStatus = calculatePassingStatus();
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 5 }, (_, i) => currentYear + i);
 
+  // Get grade based on percentage
+  const getGrade = (percentage) => {
+    const p = parseFloat(percentage);
+    if (p >= 90) return { grade: 'A+', color: 'text-green-600' };
+    if (p >= 80) return { grade: 'A', color: 'text-green-500' };
+    if (p >= 70) return { grade: 'B+', color: 'text-blue-600' };
+    if (p >= 60) return { grade: 'B', color: 'text-blue-500' };
+    if (p >= 50) return { grade: 'C+', color: 'text-yellow-600' };
+    if (p >= 40) return { grade: 'C', color: 'text-orange-500' };
+    if (p >= 33) return { grade: 'D', color: 'text-red-500' };
+    return { grade: 'F', color: 'text-red-600' };
+  };
+
+  const gradeInfo = getGrade(autoPercentage);
+
   return (
-    <div className="max-h-[80vh] overflow-y-auto px-2">
+    <div className="max-h-[85vh] overflow-y-auto px-2">
       <div className="text-center mb-6">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl shadow-lg mb-3">
           <GraduationCap className="w-8 h-8 text-white" />
         </div>
         <h2 className="text-2xl font-bold text-gray-800">Add Student Result</h2>
-        <p className="text-gray-500 text-sm mt-1">Enter marks to automatically calculate percentage and division</p>
+        <p className="text-gray-500 text-sm mt-1">Enter marks in the table below - percentage and grade calculated automatically</p>
       </div>
 
       {error && (
@@ -235,7 +266,7 @@ const AddResultForm = ({ onSuccess, onRefreshExams }) => {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Search Student */}
+        {/* Search Student Section */}
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4">
           <h3 className="text-md font-semibold text-gray-700 mb-3 flex items-center gap-2">
             <User className="w-4 h-4 text-purple-600" />
@@ -328,7 +359,7 @@ const AddResultForm = ({ onSuccess, onRefreshExams }) => {
           </div>
         </div>
         
-        {/* Show loading or empty state */}
+        {/* Exam Types Status */}
         {examTypesLoading && (
           <p className="text-sm text-gray-500 mt-2 flex items-center gap-2">
             <Loader className="w-3 h-3 animate-spin" />
@@ -346,92 +377,174 @@ const AddResultForm = ({ onSuccess, onRefreshExams }) => {
         )}
         
         {!examTypesLoading && examTypes.length > 0 && (
-          <p className="text-xs text-green-600">
-            ✓ {examTypes.length} exam type(s) available
+          <p className="text-xs text-green-600 flex items-center gap-1">
+            <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+            {examTypes.length} exam type(s) available
           </p>
         )}
 
-        {/* Subjects */}
+        {/* TABULAR SUBJECTS SECTION */}
         <div>
-          <h3 className="text-md font-semibold text-gray-700 mb-3 flex items-center gap-2">
-            <Award className="w-4 h-4 text-purple-600" />
-            Subject-wise Marks
-          </h3>
-          <div className="space-y-3">
-            {subjects.map((subject, index) => (
-              <div key={index} className="bg-gray-50 rounded-xl p-3">
-                <div className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                    value={subject.subject}
-                    onChange={(e) => updateSubject(index, 'subject', e.target.value)}
-                    placeholder="Subject Name"
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm"
-                  />
-                  {subjects.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeSubject(index)}
-                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <input
-                    type="number"
-                    value={subject.totalMarks}
-                    onChange={(e) => updateSubject(index, 'totalMarks', e.target.value)}
-                    placeholder="Total"
-                    className="px-3 py-2 border border-gray-200 rounded-lg text-sm"
-                  />
-                  <input
-                    type="number"
-                    value={subject.passingMarks}
-                    onChange={(e) => updateSubject(index, 'passingMarks', e.target.value)}
-                    placeholder="Passing"
-                    className="px-3 py-2 border border-gray-200 rounded-lg text-sm"
-                  />
-                  <input
-                    type="number"
-                    value={subject.scoredMarks}
-                    onChange={(e) => updateSubject(index, 'scoredMarks', e.target.value)}
-                    placeholder="Scored"
-                    className="px-3 py-2 border border-gray-200 rounded-lg text-sm font-medium"
-                  />
-                </div>
-              </div>
-            ))}
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-md font-semibold text-gray-700 flex items-center gap-2">
+              <Award className="w-4 h-4 text-purple-600" />
+              Subject-wise Marks Entry
+            </h3>
             <button
               type="button"
               onClick={addSubject}
-              className="text-purple-600 hover:text-purple-700 flex items-center gap-2 text-sm font-medium mt-2"
+              className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition flex items-center gap-1 text-sm font-medium"
             >
               <Plus className="w-4 h-4" />
-              Add Another Subject
+              Add Subject
             </button>
           </div>
 
-          {/* Live Summary Card */}
+          {/* Table View */}
+          <div className="overflow-x-auto rounded-xl border border-gray-200">
+            <table className="w-full">
+              {/* Table Header */}
+              <thead className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
+                <tr>
+                  <th className="px-4 py-3 text-left text-sm font-semibold">#</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold">Subject Name</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold">Total Marks</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold">Passing Marks</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold">Scored Marks</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold">Status</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold">Action</th>
+                </tr>
+              </thead>
+              
+              {/* Table Body */}
+              <tbody className="divide-y divide-gray-200 bg-white">
+                {subjects.map((subject, index) => {
+                  const scored = parseInt(subject.scoredMarks) || 0;
+                  const passing = parseInt(subject.passingMarks) || 33;
+                  const total = parseInt(subject.totalMarks) || 100;
+                  const isPassing = scored >= passing;
+                  
+                  return (
+                    <tr key={index} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-3 text-sm text-gray-500">{index + 1}</td>
+                      
+                      <td className="px-4 py-3">
+                        <input
+                          type="text"
+                          value={subject.subject}
+                          onChange={(e) => updateSubject(index, 'subject', e.target.value)}
+                          placeholder="Subject Name"
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                        />
+                      </td>
+                      
+                      <td className="px-4 py-3">
+                        <input
+                          type="number"
+                          value={subject.totalMarks}
+                          onChange={(e) => updateSubject(index, 'totalMarks', e.target.value)}
+                          className="w-24 text-center px-2 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm"
+                        />
+                      </td>
+                      
+                      <td className="px-4 py-3">
+                        <input
+                          type="number"
+                          value={subject.passingMarks}
+                          onChange={(e) => updateSubject(index, 'passingMarks', e.target.value)}
+                          className="w-24 text-center px-2 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm"
+                        />
+                      </td>
+                      
+                      <td className="px-4 py-3">
+                        <input
+                          type="number"
+                          value={subject.scoredMarks}
+                          onChange={(e) => updateSubject(index, 'scoredMarks', e.target.value)}
+                          className={`w-24 text-center px-2 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 text-sm font-medium ${
+                            subject.scoredMarks ? (isPassing ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50') : 'border-gray-200'
+                          }`}
+                        />
+                      </td>
+                      
+                      <td className="px-4 py-3 text-center">
+                        {subject.scoredMarks ? (
+                          <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                            isPassing ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                          }`}>
+                            {isPassing ? (
+                              <TrendingUp className="w-3 h-3" />
+                            ) : (
+                              <TrendingDown className="w-3 h-3" />
+                            )}
+                            {isPassing ? 'Pass' : 'Fail'}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 text-xs">Pending</span>
+                        )}
+                      </td>
+                      
+                      <td className="px-4 py-3 text-center">
+                        <button
+                          type="button"
+                          onClick={() => removeSubject(index)}
+                          disabled={subjects.length === 1}
+                          className={`p-1.5 rounded-lg transition ${
+                            subjects.length === 1 
+                              ? 'text-gray-300 cursor-not-allowed' 
+                              : 'text-red-500 hover:bg-red-50'
+                          }`}
+                        >
+                          <Minus className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Summary Card */}
           {totalMax > 0 && (
-            <div className="mt-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-4">
-              <div className="grid grid-cols-3 gap-3 text-center">
-                <div>
+            <div className="mt-5 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-5 border border-purple-100">
+              <h4 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                <Award className="w-4 h-4 text-purple-600" />
+                Result Summary
+              </h4>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div className="text-center">
                   <p className="text-xs text-gray-500">Total Marks</p>
-                  <p className="text-xl font-bold text-gray-800">{totalObtained} / {totalMax}</p>
+                  <p className="text-2xl font-bold text-gray-800">{totalObtained} / {totalMax}</p>
                 </div>
-                <div>
+                <div className="text-center">
                   <p className="text-xs text-gray-500">Percentage</p>
-                  <p className="text-xl font-bold text-purple-600">{autoPercentage}%</p>
+                  <p className="text-2xl font-bold text-purple-600">{autoPercentage}%</p>
                 </div>
-                <div>
-                  <p className="text-xs text-gray-500">Status</p>
-                  <p className={`text-xl font-bold ${autoPercentage >= 33 ? 'text-green-600' : 'text-red-600'}`}>
-                    {autoPercentage >= 33 ? 'Pass' : 'Fail'}
+                <div className="text-center">
+                  <p className="text-xs text-gray-500">Grade</p>
+                  <p className={`text-2xl font-bold ${gradeInfo.color}`}>{gradeInfo.grade}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-gray-500">Overall Status</p>
+                  <p className={`text-2xl font-bold ${passStatus.isPass ? 'text-green-600' : 'text-red-600'}`}>
+                    {passStatus.isPass ? 'PASS' : 'FAIL'}
                   </p>
                 </div>
+                <div className="text-center">
+                  <p className="text-xs text-gray-500">Subjects</p>
+                  <p className="text-2xl font-bold text-gray-800">{subjects.length}</p>
+                </div>
               </div>
+              
+              {!passStatus.isPass && passStatus.failedSubjects.length > 0 && (
+                <div className="mt-3 p-2 bg-red-50 rounded-lg border border-red-200">
+                  <p className="text-xs text-red-600 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    Failed in: {passStatus.failedSubjects.join(', ')}
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>
