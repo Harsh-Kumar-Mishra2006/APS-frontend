@@ -3,8 +3,6 @@ import { useAuth } from '../../context/AuthContext';
 import { FileText, Plus, Eye, Loader, X, CheckCircle, GraduationCap, Calendar, TrendingUp, Users, BookOpen, Award, List } from 'lucide-react';
 import AddResultForm from '../../components/form/AddResultForm';
 import ViewResults from '../../components/view/ViewResults';
-import CreateExamForm from '../../components/form/CreateExamForm';
-import ViewExams from '../../components/view/viewExams'; // ✅ Import new component
 import api from '../../utils/api';
 
 const ResultManagement = () => {
@@ -215,15 +213,6 @@ const ResultManagement = () => {
             <AddResultForm 
                onSuccess={handleResultAdded}
             />
-            )}
-
-            {activeTab === 'create-exam' && (
-              <CreateExamForm 
-                onSuccess={handleExamCreated}
-              />
-            )}
-            {activeTab === 'view-exams' && (
-              <ViewExams />
             )}
             {activeTab === 'view-results' && (
               <ViewResults />

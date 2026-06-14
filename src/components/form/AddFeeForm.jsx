@@ -1,4 +1,4 @@
-// src/components/fee/AddFeeForm.jsx
+// src/components/fee/AddFeeForm.jsx (Simplified)
 import React, { useState } from 'react';
 import api from '../../utils/api';
 import { X, Loader, DollarSign, Calendar, Search, AlertCircle, Plus, Trash2 } from 'lucide-react';
@@ -37,7 +37,6 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
     setError('');
     
     try {
-      // Search by student ID, email, or name
       const response = await api.get('auth/users?role=student');
       if (response.data.success) {
         const searchTerm = searchValue.toLowerCase();
@@ -90,35 +89,46 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
+  const validateForm = () => {
     if (!student) {
       setError('Please search and select a student first');
-      return;
+      return false;
     }
     
     if (!formData.feeMonth) {
       setError('Please select fee month');
-      return;
+      return false;
     }
     
     if (!formData.dueDate) {
       setError('Please select due date');
-      return;
+      return false;
     }
     
     const validComponents = feeComponents.filter(c => c.name && c.amount);
     if (validComponents.length === 0) {
       setError('Please add at least one fee component with amount');
-      return;
+      return false;
     }
     
     const totalAmount = calculateTotalAmount();
     if (totalAmount <= 0) {
       setError('Total amount must be greater than 0');
+      return false;
+    }
+    
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Validate on submit
+    if (!validateForm()) {
       return;
     }
+    
+    const validComponents = feeComponents.filter(c => c.name && c.amount);
     
     setLoading(true);
     setError('');
@@ -322,7 +332,7 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
           <h3 className="text-lg font-semibold text-gray-700 mb-3">4. Payment Details</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className=" text-gray-700 font-medium mb-2 flex items-center gap-2">
+              <label className="text-gray-700 font-medium mb-2 flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
                 Due Date *
               </label>
@@ -351,12 +361,12 @@ const AddFeeForm = ({ onSuccess, onCancel }) => {
           />
         </div>
 
-        {/* Submit Button */}
+        {/* SIMPLIFIED SUBMIT BUTTON - Always active, shows validation errors on click */}
         <div className="flex gap-3 pt-4">
           <button
             type="submit"
-            disabled={loading || !student}
-            className="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 flex items-center justify-center gap-2"
+            disabled={loading}
+            className="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? (
               <>
