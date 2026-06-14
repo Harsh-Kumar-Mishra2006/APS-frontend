@@ -16,6 +16,7 @@
     "antd": "^5.12.0",
     "axios": "^1.13.2",
     "date-fns": "^4.1.0",
+    "file-saver": "^2.0.5",
     "framer-motion": "^12.34.3",
     "lucide-react": "^0.555.0",
     "moment": "^2.29.4",

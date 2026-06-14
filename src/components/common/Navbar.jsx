@@ -57,11 +57,13 @@ const Navbar = () => {
 
     const teacherItems = [
       { name: 'Student Attendance', href: '/student-attendance', icon: CalendarCheck },
-      { name: 'My Attendance', href: '/teacher-attendance-tracker', icon: LayoutDashboard },
+      { name: 'My Attendance', href: '/teacher-attendance-view', icon: LayoutDashboard },
     ];
 
     const studentItems = [
-      { name: 'My Attendance', href: '/student-attendance-tracker', icon: CalendarCheck },
+      { name: 'My Attendance', href: '/student-attendance-view', icon: CalendarCheck },
+      { name: 'My Fee', href: '/student-fee-view', icon: BarChart3 },
+      { name: 'My Results', href: '/student-result-view', icon: FileText },
     ];
 
     if (user?.role === 'admin') {
@@ -70,6 +72,10 @@ const Navbar = () => {
 
     if (user?.role === 'teacher') {
       return [...publicItems, ...teacherItems];
+    }
+
+    if (user?.role === 'student') {
+      return [...publicItems, ...studentItems];
     }
 
     return publicItems;

@@ -25,6 +25,10 @@ import StudentAttendancePage from './pages/Attendance/StudentAttendencePage'
 import TeacherAttendancePage from './pages/Attendance/TeacherAttendancePage'
 import StudentAttendanceTracker from './pages/student/StudentAttendanceTracker'
 import TeacherAttendanceTracker from './pages/teacher/TeacherAttedanceTracker'
+import StudentAttendanceView from './components/viewNew/StudentAttendanceView'
+import StudentFeeView from './components/viewNew/StudentFeeView'
+import StudentResultView from './components/viewNew/StudentResultView'
+import TeacherAttendanceView from './components/viewNew/TeacherAttendanceView'
 
 const App = () => {
   return (
@@ -58,7 +62,10 @@ const App = () => {
               <Route path="/student-attendance" element={<StudentAttendancePage/>} />
               <Route path="/student-attendance-tracker" element={<StudentAttendanceTracker/>} />
               <Route path="/teacher-attendance-tracker" element={<TeacherAttendanceTracker/>} />  
-
+              <Route path="/teacher-attendance-view" element={<TeacherAttendanceView/>} />
+              <Route path="/student-attendance-view" element={<StudentAttendanceView/>} />
+              <Route path="/student-fee-view" element={<StudentFeeView/>} />
+              <Route path="/student-result-view" element={<StudentResultView/>} />
               
               {/* ✅ CATCH-ALL ROUTE - MUST BE INSIDE <Routes> */}
               <Route path="*" element={<Navigate to="/" replace />} />
