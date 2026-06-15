@@ -29,6 +29,8 @@ import StudentAttendanceView from './components/viewNew/StudentAttendanceView'
 import StudentFeeView from './components/viewNew/StudentFeeView'
 import StudentResultView from './components/viewNew/StudentResultView'
 import TeacherAttendanceView from './components/viewNew/TeacherAttendanceView'
+import AdminAdmissionList from './components/Admission/adminAdmissionList'
+import AdmissionFormModal from './components/form/AdmissionFormModal'
 
 const App = () => {
   return (
@@ -66,7 +68,8 @@ const App = () => {
               <Route path="/student-attendance-view" element={<StudentAttendanceView/>} />
               <Route path="/student-fee-view" element={<StudentFeeView/>} />
               <Route path="/student-result-view" element={<StudentResultView/>} />
-              
+              <Route path="/admin-admissions" element={<AdminAdmissionList/>} />
+              <Route path="/admission-form" element={<AdmissionFormModal/>} />
               {/* ✅ CATCH-ALL ROUTE - MUST BE INSIDE <Routes> */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

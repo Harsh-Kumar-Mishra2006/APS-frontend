@@ -1,568 +1,462 @@
-import React, { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
-import { useAuth } from '../../context/AuthContext';
-import AdmissionsList from './admissionList';
+// src/pages/AdmissionPage.jsx
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  School, 
+  Award, 
+  Users, 
+  BookOpen, 
+  Calendar, 
+  Heart, 
+  ChevronRight, 
+  Star, 
+  CheckCircle,
+  GraduationCap,
+  Globe,
+  Trophy,
+  Music,
+  Dumbbell,
+  Laptop,
+  FlaskConical,
+  Sparkles,
+  ArrowRight,
+  Quote,
+  Play,
+  Phone,
+  Mail,
+  MapPin,
+  Clock,
+  Facebook,
+  Twitter,
+  Instagram,
+  Linkedin,
+  Send
+} from 'lucide-react';
+import AdmissionFormModal from '../../components/form/AdmissionFormModal';
 
 const AdmissionPage = () => {
-  const { isAdmin, user } = useAuth();
-  const [activeTab, setActiveTab] = useState('view');
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [admissions, setAdmissions] = useState([]);
-  const [loading, setLoading] = useState(false);
-  
-  // Form state
-  const [formData, setFormData] = useState({
-    courseName: '',
-    gradeLevel: '',
-    ageRange: '',
-    availableSeats: '',
-    feeStructure: '',
-    description: '',
-    entranceExam: 'No',
-    streams: '',
-    importantDates: {
-      registrationStart: '',
-      registrationEnd: '',
-      examDate: '',
-      resultDate: ''
-    }
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [formData, setFormData] = useState(null);
+  const featuresRef = useRef(null);
+  const testimonialsRef = useRef(null);
+  const statsRef = useRef(null);
+
+  // Animated counter for stats
+  const [counts, setCounts] = useState({
+    students: 0,
+    teachers: 0,
+    years: 0,
+    awards: 0
   });
 
-  const admissionGuidelines = {
-    general: [
-      'Admissions are open for Pre-Nursery to Grade 12',
-      'Academic session begins in April each year',
-      'Registration for new academic session starts from January',
-      'Age criteria must be strictly followed as per CBSE guidelines'
-    ],
-    documents: [
-      'Birth Certificate (issued by Municipal Corporation)',
-      'Aadhaar Card of student and parents',
-      'Passport size photographs (4 copies)',
-      'Previous year\'s report card (for Grade 1 onwards)',
-      'Transfer Certificate (for Grade 2 onwards)',
-      'Address proof (Aadhaar Card/Passport/Electricity Bill)'
-    ],
-    process: [
-      'Step 1: Online Registration & Form Submission',
-      'Step 2: Entrance Test/Interaction (as applicable)',
-      'Step 3: Document Verification',
-      'Step 4: Fee Payment & Confirmation',
-      'Step 5: Orientation Program for Parents & Students'
-    ]
-  };
-
-  const gradeLevels = [
-    { level: 'Pre-School (Nursery, LKG, UKG)', age: '3-5 years', seats: '60' },
-    { level: 'Primary (Grade 1-5)', age: '6-10 years', seats: '120' },
-    { level: 'Middle (Grade 6-8)', age: '11-13 years', seats: '90' },
-    { level: 'Secondary (Grade 9-10)', age: '14-15 years', seats: '75' },
-    { level: 'Senior Secondary (Grade 11-12)', age: '16-17 years', seats: '60', streams: ['Science', 'Commerce', 'Humanities'] }
-  ];
-
-  const importantDates = [
-    { event: 'Online Application Starts', date: 'January 15, 2026' },
-    { event: 'Last Date for Application', date: 'February 28, 2026' },
-    { event: 'Entrance Tests (Grade 1-9)', date: 'March 5-10, 2026' },
-    { event: 'Interaction (Pre-School)', date: 'March 12-15, 2026' },
-    { event: 'Result Declaration', date: 'March 20, 2026' },
-    { event: 'Fee Payment Deadline', date: 'March 31, 2026' },
-    { event: 'New Session Begins', date: 'April 1, 2026' }
-  ];
-
-  const handleApplyNow = () => {
-    toast.info('Redirecting to online application portal...');
-    setTimeout(() => {
-      window.open('https://applications.achievementschool.edu', '_blank');
-    }, 1500);
-  };
-
-  const handleAddCourse = () => {
-    setShowAddForm(true);
-    setActiveTab('add');
-    // Reset form data
-    setFormData({
-      courseName: '',
-      gradeLevel: '',
-      ageRange: '',
-      availableSeats: '',
-      feeStructure: '',
-      description: '',
-      entranceExam: 'No',
-      streams: '',
-      importantDates: {
-        registrationStart: '',
-        registrationEnd: '',
-        examDate: '',
-        resultDate: ''
-      }
-    });
-  };
-
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
-    
-    // Validate form
-    if (!formData.courseName.trim() || !formData.gradeLevel.trim()) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
-    setLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      toast.success('Admission course added successfully!');
-      setShowAddForm(false);
-      setActiveTab('view');
-      setLoading(false);
+  useEffect(() => {
+    const animateNumbers = () => {
+      const targets = {
+        students: 2500,
+        teachers: 150,
+        years: 25,
+        awards: 45
+      };
       
-      // Reset form
-      setFormData({
-        courseName: '',
-        gradeLevel: '',
-        ageRange: '',
-        availableSeats: '',
-        feeStructure: '',
-        description: '',
-        entranceExam: 'No',
-        streams: '',
-        importantDates: {
-          registrationStart: '',
-          registrationEnd: '',
-          examDate: '',
-          resultDate: ''
-        }
-      });
-    }, 1500);
+      const duration = 2000;
+      const step = 20;
+      const increments = {
+        students: targets.students / (duration / step),
+        teachers: targets.teachers / (duration / step),
+        years: targets.years / (duration / step),
+        awards: targets.awards / (duration / step)
+      };
+      
+      let current = { students: 0, teachers: 0, years: 0, awards: 0 };
+      const timer = setInterval(() => {
+        let allComplete = true;
+        Object.keys(current).forEach(key => {
+          if (current[key] < targets[key]) {
+            current[key] = Math.min(current[key] + increments[key], targets[key]);
+            allComplete = false;
+          }
+        });
+        setCounts({ ...current });
+        if (allComplete) clearInterval(timer);
+      }, step);
+    };
+    
+    // Intersection Observer for stats animation
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            animateNumbers();
+            observer.disconnect();
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+    
+    if (statsRef.current) {
+      observer.observe(statsRef.current);
+    }
+    
+    return () => observer.disconnect();
+  }, []);
+
+  const handleBookingClick = () => {
+    setIsModalOpen(true);
   };
 
-  const handleCancelForm = () => {
-    setShowAddForm(false);
-    setActiveTab('view');
-    toast.info('Form cancelled');
+  const handleFormSubmitSuccess = (data) => {
+    setFormData(data);
+    setIsModalOpen(false);
+    setShowSuccess(true);
+    setTimeout(() => {
+      setShowSuccess(false);
+    }, 5000);
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+  // Features data
+  const features = [
+    { icon: <Trophy className="w-8 h-8" />, title: "Academic Excellence", desc: "Consistently top results in board examinations", color: "from-yellow-500 to-orange-500" },
+    { icon: <FlaskConical className="w-8 h-8" />, title: "Modern Labs", desc: "State-of-the-art science and computer labs", color: "from-blue-500 to-cyan-500" },
+    { icon: <Music className="w-8 h-8" />, title: "Performing Arts", desc: "Music, dance, and drama facilities", color: "from-purple-500 to-pink-500" },
+    { icon: <Dumbbell className="w-8 h-8" />, title: "Sports Complex", desc: "Indoor & outdoor sports facilities", color: "from-green-500 to-emerald-500" },
+    { icon: <Laptop className="w-8 h-8" />, title: "Smart Classes", desc: "Digital classrooms with smart boards", color: "from-indigo-500 to-purple-500" },
+    { icon: <Globe className="w-8 h-8" />, title: "Global Exposure", desc: "International exchange programs", color: "from-red-500 to-pink-500" }
+  ];
 
-  const handleDateChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      importantDates: {
-        ...prev.importantDates,
-        [name]: value
-      }
-    }));
-  };
+  // Testimonials data
+  const testimonials = [
+    {
+      name: "Mrs. Priya Sharma",
+      role: "Parent of Riya (Class X)",
+      image: "https://randomuser.me/api/portraits/women/1.jpg",
+      quote: "The holistic development approach at this school is remarkable. My daughter has excelled not just in academics but also in extracurricular activities.",
+      rating: 5
+    },
+    {
+      name: "Mr. Rajesh Kumar",
+      role: "Parent of Ankit (Class XII)",
+      image: "https://randomuser.me/api/portraits/men/2.jpg",
+      quote: "Excellent faculty and infrastructure. The school's focus on conceptual learning rather than rote memorization is truly commendable.",
+      rating: 5
+    },
+    {
+      name: "Dr. Smita Patel",
+      role: "Alumni Parent",
+      image: "https://randomuser.me/api/portraits/women/3.jpg",
+      quote: "Both my children studied here and are now in top universities. The foundation they received was exceptional.",
+      rating: 5
+    }
+  ];
 
-  const adminTabs = [
-    { id: 'view', label: 'View Admissions', icon: '👁️' },
-    { id: 'add', label: 'Add Course', icon: '➕' },
-    { id: 'manage', label: 'Manage', icon: '⚙️' }
+  // Achievements data
+  const achievements = [
+    { year: "2023", achievement: "CBSE School Excellence Award", icon: <Award className="w-6 h-6" /> },
+    { year: "2022", achievement: "Best School in Technology Integration", icon: <Award className="w-6 h-6" /> },
+    { year: "2021", achievement: "National Sports Championship Winners", icon: <Trophy className="w-6 h-6" /> },
+    { year: "2020", achievement: "Green School Certification", icon: <Globe className="w-6 h-6" /> }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 text-white overflow-hidden">
+      <section className="relative overflow-hidden bg-gradient-to-br from-purple-700 via-purple-600 to-indigo-700 text-white">
+        {/* Animated Background */}
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 right-10 w-40 h-40 bg-white rounded-full"></div>
-          <div className="absolute bottom-10 left-10 w-32 h-32 bg-yellow-400 rounded-full"></div>
+          <div className="absolute top-20 left-10 w-72 h-72 bg-white rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-white rounded-full blur-3xl animate-pulse delay-1000"></div>
         </div>
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="text-center">
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6">
-              <span className="bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
-                Admissions
-              </span>
-              <br />
-              <span className="bg-gradient-to-r from-yellow-400 to-yellow-300 bg-clip-text text-transparent">
-                2026
-              </span>
-            </h1>
-            <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto opacity-90">
-              Begin your journey towards excellence at Achievement Public School. 
-              Admissions now open for the academic session 2026.
-            </p>
-            {!showAddForm && (
-              <button 
-                onClick={handleApplyNow}
-                className="px-10 py-4 bg-gradient-to-r from-yellow-500 to-yellow-400 text-gray-900 font-bold text-lg rounded-xl shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 animate-pulse"
-              >
-                🚀 Apply Online Now
-              </button>
-            )}
+        <div className="relative container mx-auto px-6 py-20 lg:py-28">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-8">
+              <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
+                <Sparkles className="w-4 h-4 text-yellow-300" />
+                <span className="text-sm font-medium">Admissions Open for Academic Year 2025-26</span>
+              </div>
+              
+              <h1 className="text-5xl lg:text-7xl font-bold leading-tight">
+                Shape Your Child's
+                <span className="bg-gradient-to-r from-yellow-300 to-orange-400 bg-clip-text text-transparent"> Bright Future</span>
+              </h1>
+              
+              <p className="text-lg text-purple-100 leading-relaxed">
+                Join a community of excellence where every child discovers their potential. 
+                State-of-the-art facilities, experienced faculty, and a nurturing environment 
+                for holistic development.
+              </p>
+              
+              <div className="flex flex-wrap gap-4">
+                <button
+                  onClick={handleBookingClick}
+                  className="group bg-white text-purple-700 px-8 py-4 rounded-full font-semibold text-lg hover:shadow-2xl transition-all duration-300 flex items-center gap-2"
+                >
+                  Book Admission Registration
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </button>
+                
+                <button 
+                  onClick={() => testimonialsRef.current?.scrollIntoView({ behavior: 'smooth' })}
+                  className="border-2 border-white/30 px-8 py-4 rounded-full font-semibold text-lg hover:bg-white/10 transition-colors"
+                >
+                  Watch Virtual Tour
+                </button>
+              </div>
+              
+              <div className="flex items-center gap-8 pt-4">
+                <div className="flex -space-x-3">
+                  {[1,2,3,4].map(i => (
+                    <img 
+                      key={i}
+                      src={`https://randomuser.me/api/portraits/${i%2===0 ? 'women' : 'men'}/${i}.jpg`}
+                      className="w-10 h-10 rounded-full border-2 border-white"
+                      alt="Parent"
+                    />
+                  ))}
+                </div>
+                <div>
+                  <p className="font-semibold">5000+ Happy Parents</p>
+                  <p className="text-sm text-purple-200">Trusted by families since 1999</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="relative hidden lg:block">
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+                <img 
+                  src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=600&h=500&fit=crop"
+                  alt="Students studying"
+                  className="w-full h-[500px] object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-purple-900/50 to-transparent"></div>
+              </div>
+              
+              {/* Floating Cards */}
+              <div className="absolute -left-10 top-20 bg-white rounded-xl shadow-xl p-4 animate-bounce">
+                <div className="flex items-center gap-3">
+                  <div className="bg-green-100 rounded-full p-2">
+                    <CheckCircle className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-gray-800 font-semibold">98% Success Rate</p>
+                    <p className="text-xs text-gray-500">In board exams</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="absolute -right-10 bottom-20 bg-white rounded-xl shadow-xl p-4 animate-pulse">
+                <div className="flex items-center gap-3">
+                  <div className="bg-purple-100 rounded-full p-2">
+                    <Users className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-gray-800 font-semibold">1:15 Teacher Ratio</p>
+                    <p className="text-xs text-gray-500">Personalized attention</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+        
+        {/* Wave Divider */}
+        <div className="absolute bottom-0 left-0 w-full">
+          <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 64L60 69.3C120 75 240 85 360 80C480 75 600 53 720 48C840 43 960 53 1080 58.7C1200 64 1320 64 1380 64L1440 64V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0V64Z" fill="white"/>
+          </svg>
+        </div>
+      </section>
 
-      {/* Admin Controls - Only visible to admin */}
-      {isAdmin && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-          <div className="bg-white rounded-2xl shadow-xl p-6 mb-8 border border-blue-200">
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">Admin Panel</h2>
-                <p className="text-gray-600">Manage admission courses</p>
-              </div>
-              {!showAddForm && (
-                <button
-                  onClick={handleAddCourse}
-                  className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
-                >
-                  <span>➕</span> Add New Course
-                </button>
-              )}
+      {/* Stats Section */}
+      <section ref={statsRef} className="py-16 bg-white">
+        <div className="container mx-auto px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="text-center">
+              <div className="text-4xl font-bold text-purple-600">{Math.floor(counts.students)}+</div>
+              <p className="text-gray-600 mt-2">Students Enrolled</p>
             </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-purple-600">{Math.floor(counts.teachers)}+</div>
+              <p className="text-gray-600 mt-2">Expert Teachers</p>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-purple-600">{Math.floor(counts.years)}+</div>
+              <p className="text-gray-600 mt-2">Years of Excellence</p>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-purple-600">{Math.floor(counts.awards)}+</div>
+              <p className="text-gray-600 mt-2">National Awards</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-            {/* Admin Tabs */}
-            {!showAddForm && (
-              <div className="flex space-x-2 mb-6">
-                {adminTabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => {
-                      setActiveTab(tab.id);
-                      setShowAddForm(tab.id === 'add');
-                    }}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
-                      activeTab === tab.id 
-                        ? 'bg-blue-600 text-white' 
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    <span>{tab.icon}</span>
-                    {tab.label}
-                  </button>
+      {/* Why Choose Us Section */}
+      <section ref={featuresRef} className="py-20 bg-gray-50">
+        <div className="container mx-auto px-6">
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <h2 className="text-4xl font-bold text-gray-800 mb-4">Why Choose Us?</h2>
+            <p className="text-gray-600 text-lg">We provide an environment that nurtures excellence in every aspect of a child's development</p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map((feature, idx) => (
+              <div 
+                key={idx}
+                className="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
+              >
+                <div className={`bg-gradient-to-r ${feature.color} w-16 h-16 rounded-2xl flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform`}>
+                  {feature.icon}
+                </div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">{feature.title}</h3>
+                <p className="text-gray-600">{feature.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Achievements Section */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-6">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 bg-purple-100 rounded-full px-4 py-2 mb-4">
+                <Trophy className="w-4 h-4 text-purple-600" />
+                <span className="text-sm font-medium text-purple-600">Our Achievements</span>
+              </div>
+              <h2 className="text-4xl font-bold text-gray-800 mb-4">Excellence Recognized Nationally</h2>
+              <p className="text-gray-600 mb-6">We take pride in our consistent track record of excellence in education and overall development.</p>
+              
+              <div className="space-y-4">
+                {achievements.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
+                    <div className="bg-purple-100 rounded-full p-2 text-purple-600">
+                      {item.icon}
+                    </div>
+                    <div>
+                      <p className="text-sm text-purple-600 font-semibold">{item.year}</p>
+                      <p className="text-gray-800 font-medium">{item.achievement}</p>
+                    </div>
+                  </div>
                 ))}
               </div>
-            )}
-          </div>
-
-          {/* Add Admission Form */}
-          {showAddForm && activeTab === 'add' && (
-            <div className="mb-8 animate-fadeIn">
-              <div className="bg-white rounded-2xl shadow-xl p-6 border border-blue-300">
-                <div className="flex justify-between items-center mb-8 pb-6 border-b border-gray-200">
+            </div>
+            
+            <div className="relative">
+              <img 
+                src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&h=500&fit=crop"
+                alt="Achievement ceremony"
+                className="rounded-2xl shadow-xl w-full"
+              />
+              <div className="absolute -bottom-6 -right-6 bg-white rounded-xl shadow-xl p-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-green-100 rounded-full p-3">
+                    <CheckCircle className="w-8 h-8 text-green-600" />
+                  </div>
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900">Add New Admission Course</h3>
-                    <p className="text-gray-600 mt-2">Create a new admission course for upcoming batches</p>
+                    <p className="text-2xl font-bold text-gray-800">CBSE</p>
+                    <p className="text-xs text-gray-500">Affiliated School</p>
                   </div>
-                  <button
-                    onClick={handleCancelForm}
-                    className="px-4 py-2 text-gray-600 hover:text-gray-900 font-medium rounded-lg hover:bg-gray-100 transition-colors"
-                  >
-                    ✕ Cancel
-                  </button>
                 </div>
-                
-                <form onSubmit={handleFormSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Course Name */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Course Name *
-                      </label>
-                      <input
-                        type="text"
-                        name="courseName"
-                        value={formData.courseName}
-                        onChange={handleInputChange}
-                        placeholder="e.g., Senior Secondary - Science Stream"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                        required
-                      />
-                    </div>
-
-                    {/* Grade Level */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Grade Level *
-                      </label>
-                      <select
-                        name="gradeLevel"
-                        value={formData.gradeLevel}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                        required
-                      >
-                        <option value="">Select Grade Level</option>
-                        <option value="Pre-School">Pre-School (Nursery, LKG, UKG)</option>
-                        <option value="Primary">Primary (Grade 1-5)</option>
-                        <option value="Middle">Middle (Grade 6-8)</option>
-                        <option value="Secondary">Secondary (Grade 9-10)</option>
-                        <option value="Senior Secondary">Senior Secondary (Grade 11-12)</option>
-                      </select>
-                    </div>
-
-                    {/* Age Range */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Age Range *
-                      </label>
-                      <input
-                        type="text"
-                        name="ageRange"
-                        value={formData.ageRange}
-                        onChange={handleInputChange}
-                        placeholder="e.g., 16-17 years"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                        required
-                      />
-                    </div>
-
-                    {/* Available Seats */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Available Seats *
-                      </label>
-                      <input
-                        type="number"
-                        name="availableSeats"
-                        value={formData.availableSeats}
-                        onChange={handleInputChange}
-                        placeholder="e.g., 60"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                        required
-                      />
-                    </div>
-
-                    {/* Streams (Optional) */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Streams (Optional)
-                      </label>
-                      <input
-                        type="text"
-                        name="streams"
-                        value={formData.streams}
-                        onChange={handleInputChange}
-                        placeholder="e.g., Science, Commerce, Humanities"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                      />
-                    </div>
-
-                    {/* Entrance Exam Required */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Entrance Exam Required?
-                      </label>
-                      <div className="flex space-x-4">
-                        <label className="flex items-center">
-                          <input
-                            type="radio"
-                            name="entranceExam"
-                            value="Yes"
-                            checked={formData.entranceExam === 'Yes'}
-                            onChange={handleInputChange}
-                            className="w-4 h-4 text-blue-600"
-                          />
-                          <span className="ml-2 text-gray-700">Yes</span>
-                        </label>
-                        <label className="flex items-center">
-                          <input
-                            type="radio"
-                            name="entranceExam"
-                            value="No"
-                            checked={formData.entranceExam === 'No'}
-                            onChange={handleInputChange}
-                            className="w-4 h-4 text-blue-600"
-                          />
-                          <span className="ml-2 text-gray-700">No</span>
-                        </label>
-                      </div>
-                    </div>
-
-                    {/* Fee Structure */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Fee Structure (Annual)
-                      </label>
-                      <input
-                        type="text"
-                        name="feeStructure"
-                        value={formData.feeStructure}
-                        onChange={handleInputChange}
-                        placeholder="e.g., ₹85,000 per annum"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Description */}
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Course Description
-                    </label>
-                    <textarea
-                      name="description"
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      placeholder="Describe the course, curriculum, and special features..."
-                      rows="4"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
-                    />
-                  </div>
-
-                  {/* Important Dates Section */}
-                  <div className="space-y-4 pt-6 border-t border-gray-200">
-                    <h4 className="text-lg font-semibold text-gray-900">Important Dates</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">
-                          Registration Start Date
-                        </label>
-                        <input
-                          type="date"
-                          name="registrationStart"
-                          value={formData.importantDates.registrationStart}
-                          onChange={handleDateChange}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">
-                          Registration End Date
-                        </label>
-                        <input
-                          type="date"
-                          name="registrationEnd"
-                          value={formData.importantDates.registrationEnd}
-                          onChange={handleDateChange}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">
-                          Entrance Exam Date
-                        </label>
-                        <input
-                          type="date"
-                          name="examDate"
-                          value={formData.importantDates.examDate}
-                          onChange={handleDateChange}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">
-                          Result Declaration Date
-                        </label>
-                        <input
-                          type="date"
-                          name="resultDate"
-                          value={formData.importantDates.resultDate}
-                          onChange={handleDateChange}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Form Actions */}
-                  <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
-                    <button
-                      type="button"
-                      onClick={handleCancelForm}
-                      className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors"
-                      disabled={loading}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                      disabled={loading}
-                    >
-                      {loading ? (
-                        <>
-                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          Adding...
-                        </>
-                      ) : (
-                        'Add Admission Course'
-                      )}
-                    </button>
-                  </div>
-                </form>
               </div>
-            </div>
-          )}
-        </div>
-      )}
-      <AdmissionsList/>
-
-      {/* View Admissions Section */}
-      {activeTab === 'view' && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-          <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">Available Admission Courses</h2>
-            {/* Admission courses list will go here */}
-            <div className="text-center py-12">
-              <div className="text-gray-400 mb-4">
-                <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 14l9-5-9-5-9 5 9 5z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-600 mb-2">No admission courses available</h3>
-              <p className="text-gray-500">Add new admission courses using the admin panel</p>
             </div>
           </div>
         </div>
-      )}
+      </section>
 
-      {/* Guidelines & Important Dates - Only shown for public view */}
-      {!showAddForm && activeTab === 'view' && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-          {/* Rest of your existing content remains the same */}
-          {/* ... */}
+      {/* Testimonials Section */}
+      <section ref={testimonialsRef} className="py-20 bg-gradient-to-br from-purple-50 to-indigo-50">
+        <div className="container mx-auto px-6">
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <h2 className="text-4xl font-bold text-gray-800 mb-4">What Parents Say</h2>
+            <p className="text-gray-600 text-lg">Hear from our happy parents about their children's journey with us</p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial, idx) => (
+              <div key={idx} className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+                <Quote className="w-10 h-10 text-purple-300 mb-4" />
+                <p className="text-gray-600 mb-6 leading-relaxed">"{testimonial.quote}"</p>
+                <div className="flex items-center gap-4">
+                  <img 
+                    src={testimonial.image} 
+                    alt={testimonial.name}
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
+                  <div>
+                    <p className="font-semibold text-gray-800">{testimonial.name}</p>
+                    <p className="text-sm text-gray-500">{testimonial.role}</p>
+                    <div className="flex gap-1 mt-1">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      )}
+      </section>
 
       {/* CTA Section */}
-      {!showAddForm && activeTab === 'view' && (
-        <div className="bg-gradient-to-r from-blue-700 to-blue-900 py-20">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-4xl font-bold text-white mb-6">Ready to Begin Your Journey?</h2>
-            <p className="text-xl text-blue-200 mb-8 max-w-2xl mx-auto">
-              Join over 5,000 successful alumni who started their journey at Achievement Public School
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button 
-                onClick={handleApplyNow}
-                className="px-10 py-4 bg-gradient-to-r from-yellow-500 to-yellow-400 text-gray-900 font-bold text-lg rounded-xl shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300"
-              >
-                Apply Online for 2026
-              </button>
-              <button className="px-10 py-4 bg-transparent border-2 border-white text-white font-bold text-lg rounded-xl hover:bg-white hover:text-blue-900 transition-all duration-300">
-                Download Prospectus
-              </button>
+      <section className="py-20 bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
+        <div className="container mx-auto px-6 text-center">
+          <h2 className="text-4xl font-bold mb-4">Ready to Begin the Journey?</h2>
+          <p className="text-xl text-purple-100 mb-8">Limited seats available for the academic year 2025-26</p>
+          <button
+            onClick={handleBookingClick}
+            className="inline-flex items-center gap-2 bg-white text-purple-600 px-8 py-4 rounded-full font-semibold text-lg hover:shadow-2xl transition-all duration-300"
+          >
+            Register Now
+            <Send className="w-5 h-5" />
+          </button>
+        </div>
+      </section>
+
+      {/* Modal Components */}
+      <AdmissionFormModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={handleFormSubmitSuccess}
+      />
+
+      {/* Success Popup */}
+      {showSuccess && formData && (
+        <div className="fixed bottom-6 right-6 z-50 animate-slide-up">
+          <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl shadow-2xl p-5 max-w-md">
+            <div className="flex items-start gap-4">
+              <div className="bg-white/20 rounded-full p-2">
+                <CheckCircle className="w-8 h-8" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-lg">Registration Successful!</h3>
+                <p className="text-sm opacity-90 mt-1">
+                  Your application has been submitted. Application Number: <strong className="font-mono">{formData.applicationNumber}</strong>
+                </p>
+                <p className="text-xs mt-2 opacity-80">We'll contact you within 3-5 business days</p>
+              </div>
             </div>
-            <p className="text-blue-300 text-sm mt-6">
-              Applications closing soon! Last date: February 28, 2026
-            </p>
           </div>
         </div>
       )}
 
-      {/* Footer Note */}
-      <div className="bg-white border-t border-gray-200 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-gray-600">
-            🎓 Achievement Public School is affiliated with CBSE, New Delhi. 
-            All admissions are subject to availability of seats and fulfillment of eligibility criteria.
-          </p>
-        </div>
-      </div>
+      <style jsx>{`
+        @keyframes slide-up {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-slide-up {
+          animation: slide-up 0.3s ease-out;
+        }
+      `}</style>
     </div>
   );
 };

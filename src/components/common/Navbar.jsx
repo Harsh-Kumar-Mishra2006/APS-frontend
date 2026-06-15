@@ -53,6 +53,7 @@ const Navbar = () => {
       { name: 'Fee Management', href: '/fee-management', icon: BarChart3 },
       { name: 'Result Management', href: '/result-management', icon: FileText },
       { name: 'Teacher Attendance', href: '/teacher-attendance', icon: CalendarCheck },
+      { name: 'Admissions', href: '/admin-admissions', icon: BookOpen },
     ];
 
     const teacherItems = [
