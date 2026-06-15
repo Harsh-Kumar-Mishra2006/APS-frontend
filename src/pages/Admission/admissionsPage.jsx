@@ -1,4 +1,4 @@
-// src/pages/AdmissionPage.jsx
+// src/pages/AdmissionPage.jsx (Updated with Dashboard Box)
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   School, 
@@ -29,7 +29,17 @@ import {
   Twitter,
   Instagram,
   Linkedin,
-  Send
+  Send,
+  FileText,
+  ClipboardList,
+  Clock as ClockIcon,
+  CreditCard,
+  BarChart3,
+  TrendingUp,
+  Zap,
+  Shield,
+  Target,
+  Eye
 } from 'lucide-react';
 import AdmissionFormModal from '../../components/form/AdmissionFormModal';
 
@@ -81,7 +91,6 @@ const AdmissionPage = () => {
       }, step);
     };
     
-    // Intersection Observer for stats animation
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach(entry => {
@@ -114,7 +123,54 @@ const AdmissionPage = () => {
     }, 5000);
   };
 
-  // Features data
+  // Dashboard box data
+  const dashboardStats = [
+    { 
+      label: "Applications Received", 
+      value: "1,284", 
+      change: "+23%", 
+      trend: "up",
+      icon: <FileText className="w-6 h-6" />,
+      color: "from-blue-500 to-cyan-500",
+      bg: "bg-blue-50"
+    },
+    { 
+      label: "Seats Available", 
+      value: "156", 
+      change: "-12%", 
+      trend: "down",
+      icon: <Users className="w-6 h-6" />,
+      color: "from-green-500 to-emerald-500",
+      bg: "bg-green-50"
+    },
+    { 
+      label: "Processing Time", 
+      value: "3-5", 
+      suffix: "days",
+      change: "-2 days",
+      trend: "up",
+      icon: <ClockIcon className="w-6 h-6" />,
+      color: "from-orange-500 to-red-500",
+      bg: "bg-orange-50"
+    },
+    { 
+      label: "Scholarships", 
+      value: "₹50L", 
+      change: "+15%", 
+      trend: "up",
+      icon: <Trophy className="w-6 h-6" />,
+      color: "from-purple-500 to-pink-500",
+      bg: "bg-purple-50"
+    }
+  ];
+
+  const quickActions = [
+    { icon: <ClipboardList className="w-5 h-5" />, title: "New Application", desc: "Start your admission process", color: "bg-purple-600" },
+    { icon: <Eye className="w-5 h-5" />, title: "Check Status", desc: "Track your application", color: "bg-blue-600" },
+    { icon: <CreditCard className="w-5 h-5" />, title: "Fee Structure", desc: "View fee details", color: "bg-green-600" },
+    { icon: <Calendar className="w-5 h-5" />, title: "Important Dates", desc: "Admission schedule", color: "bg-orange-600" }
+  ];
+
   const features = [
     { icon: <Trophy className="w-8 h-8" />, title: "Academic Excellence", desc: "Consistently top results in board examinations", color: "from-yellow-500 to-orange-500" },
     { icon: <FlaskConical className="w-8 h-8" />, title: "Modern Labs", desc: "State-of-the-art science and computer labs", color: "from-blue-500 to-cyan-500" },
@@ -124,7 +180,6 @@ const AdmissionPage = () => {
     { icon: <Globe className="w-8 h-8" />, title: "Global Exposure", desc: "International exchange programs", color: "from-red-500 to-pink-500" }
   ];
 
-  // Testimonials data
   const testimonials = [
     {
       name: "Mrs. Priya Sharma",
@@ -149,7 +204,6 @@ const AdmissionPage = () => {
     }
   ];
 
-  // Achievements data
   const achievements = [
     { year: "2023", achievement: "CBSE School Excellence Award", icon: <Award className="w-6 h-6" /> },
     { year: "2022", achievement: "Best School in Technology Integration", icon: <Award className="w-6 h-6" /> },
@@ -161,7 +215,6 @@ const AdmissionPage = () => {
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-purple-700 via-purple-600 to-indigo-700 text-white">
-        {/* Animated Background */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-10 w-72 h-72 bg-white rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute bottom-20 right-10 w-96 h-96 bg-white rounded-full blur-3xl animate-pulse delay-1000"></div>
@@ -224,14 +277,13 @@ const AdmissionPage = () => {
             <div className="relative hidden lg:block">
               <div className="relative rounded-3xl overflow-hidden shadow-2xl">
                 <img 
-                  src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=600&h=500&fit=crop"
-                  alt="Students studying"
+                  src="school_pic.webp"
+                  alt="School Campus"
                   className="w-full h-[500px] object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-purple-900/50 to-transparent"></div>
               </div>
               
-              {/* Floating Cards */}
               <div className="absolute -left-10 top-20 bg-white rounded-xl shadow-xl p-4 animate-bounce">
                 <div className="flex items-center gap-3">
                   <div className="bg-green-100 rounded-full p-2">
@@ -259,7 +311,6 @@ const AdmissionPage = () => {
           </div>
         </div>
         
-        {/* Wave Divider */}
         <div className="absolute bottom-0 left-0 w-full">
           <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M0 64L60 69.3C120 75 240 85 360 80C480 75 600 53 720 48C840 43 960 53 1080 58.7C1200 64 1320 64 1380 64L1440 64V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0V64Z" fill="white"/>
@@ -286,6 +337,143 @@ const AdmissionPage = () => {
             <div className="text-center">
               <div className="text-4xl font-bold text-purple-600">{Math.floor(counts.awards)}+</div>
               <p className="text-gray-600 mt-2">National Awards</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========== NEW DASHBOARD BOX SECTION ========== */}
+      <section className="py-12 -mt-8 relative z-10">
+        <div className="container mx-auto px-6">
+          {/* Main Dashboard Card */}
+          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
+            {/* Gradient Header */}
+            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-8 py-6">
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-white">Admission Dashboard</h2>
+                  <p className="text-purple-100 mt-1">Real-time admission insights and quick actions</p>
+                </div>
+                <div className="flex gap-3">
+                  <div className="bg-white/20 backdrop-blur-sm rounded-xl px-4 py-2 text-center">
+                    <p className="text-xs text-purple-200">Session</p>
+                    <p className="text-white font-semibold">2025-26</p>
+                  </div>
+                  <div className="bg-white/20 backdrop-blur-sm rounded-xl px-4 py-2 text-center">
+                    <p className="text-xs text-purple-200">Status</p>
+                    <p className="text-green-300 font-semibold">Open</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-8 bg-gray-50">
+              {dashboardStats.map((stat, idx) => (
+                <div key={idx} className={`${stat.bg} rounded-2xl p-5 transition-all duration-300 hover:scale-105 cursor-pointer`}>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm text-gray-500">{stat.label}</p>
+                      <p className="text-3xl font-bold text-gray-800 mt-1">
+                        {stat.value}
+                        {stat.suffix && <span className="text-sm font-normal text-gray-500"> {stat.suffix}</span>}
+                      </p>
+                      <div className="flex items-center gap-1 mt-2">
+                        {stat.trend === 'up' ? (
+                          <TrendingUp className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <BarChart3 className="w-4 h-4 text-red-500" />
+                        )}
+                        <span className={`text-xs font-medium ${stat.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+                          {stat.change}
+                        </span>
+                        <span className="text-xs text-gray-500">vs last year</span>
+                      </div>
+                    </div>
+                    <div className={`bg-gradient-to-r ${stat.color} p-3 rounded-xl text-white shadow-lg`}>
+                      {stat.icon}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Quick Actions & Info */}
+            <div className="p-8">
+              <div className="flex items-center gap-2 mb-6">
+                <Zap className="w-5 h-5 text-purple-600" />
+                <h3 className="text-lg font-semibold text-gray-800">Quick Actions</h3>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                {quickActions.map((action, idx) => (
+                  <button
+                    key={idx}
+                    onClick={idx === 0 ? handleBookingClick : undefined}
+                    className="group flex items-center gap-4 p-4 border border-gray-200 rounded-2xl hover:shadow-lg transition-all duration-300 hover:border-purple-200"
+                  >
+                    <div className={`${action.color} p-3 rounded-xl text-white group-hover:scale-110 transition-transform`}>
+                      {action.icon}
+                    </div>
+                    <div className="text-left">
+                      <p className="font-semibold text-gray-800">{action.title}</p>
+                      <p className="text-xs text-gray-500">{action.desc}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Info Bars */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-blue-50 rounded-2xl p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Target className="w-5 h-5 text-blue-600" />
+                    <h4 className="font-semibold text-gray-800">Admission Progress</h4>
+                  </div>
+                  <div className="mb-2 flex justify-between text-sm">
+                    <span className="text-gray-600">Seats Filled</span>
+                    <span className="font-semibold text-blue-600">68%</span>
+                  </div>
+                  <div className="w-full bg-blue-200 rounded-full h-2">
+                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: '68%' }}></div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-3">1,284 applications received for 1,890 seats</p>
+                </div>
+
+                <div className="bg-purple-50 rounded-2xl p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Shield className="w-5 h-5 text-purple-600" />
+                    <h4 className="font-semibold text-gray-800">Important Dates</h4>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Application Deadline</span>
+                      <span className="font-medium text-purple-600">March 31, 2025</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Entrance Exam</span>
+                      <span className="font-medium text-purple-600">April 15, 2025</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Result Declaration</span>
+                      <span className="font-medium text-purple-600">April 30, 2025</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* CTA Button inside dashboard */}
+              <div className="mt-8 text-center">
+                <button
+                  onClick={handleBookingClick}
+                  className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-3 rounded-xl font-semibold hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                >
+                  <ClipboardList className="w-5 h-5" />
+                  Start Your Admission Application Now
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+                <p className="text-xs text-gray-400 mt-3">No registration fee • Easy 2-step process • Instant confirmation</p>
+              </div>
             </div>
           </div>
         </div>
@@ -414,6 +602,8 @@ const AdmissionPage = () => {
           </button>
         </div>
       </section>
+
+      
 
       {/* Modal Components */}
       <AdmissionFormModal 
