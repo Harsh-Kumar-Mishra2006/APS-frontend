@@ -23,10 +23,10 @@ const AllFeesView = ({ userRole, onAddPayment }) => {
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [summary, setSummary] = useState({
-    total_fees: 0,
-    total_collected: 0,
-    total_due: 0,
-    total_records: 0
+    totalFees: 0,
+    totalPaid: 0,
+    totalDue: 0,
+    totalRecords: 0
   });
 
   const classes = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
@@ -55,11 +55,21 @@ const AllFeesView = ({ userRole, onAddPayment }) => {
       }
       
       const response = await api.get(url);
+      console.log('API Response:', response.data); // Debug log
+      
       if (response.data.success) {
         setFees(response.data.data);
         applyFilters(response.data.data, searchTerm);
+        
+        // Handle summary - check both camelCase and snake_case
         if (response.data.summary) {
-          setSummary(response.data.summary);
+          const summaryData = response.data.summary;
+          setSummary({
+            totalFees: summaryData.totalAmount || summaryData.total_fees || 0,
+            totalPaid: summaryData.totalPaid || summaryData.total_collected || 0,
+            totalDue: summaryData.totalDue || summaryData.total_due || 0,
+            totalRecords: response.data.count || response.data.data?.length || 0
+          });
         } else {
           calculateSummary(response.data.data);
         }
@@ -87,15 +97,15 @@ const AllFeesView = ({ userRole, onAddPayment }) => {
   };
 
   const calculateSummary = (feeList) => {
-    const total_fees = feeList.reduce((sum, fee) => sum + parseFloat(fee.totalAmount || 0), 0);
-    const total_collected = feeList.reduce((sum, fee) => sum + parseFloat(fee.totalPaid || 0), 0);
-    const total_due = feeList.reduce((sum, fee) => sum + parseFloat(fee.balanceAmount || 0), 0);
+    const totalFees = feeList.reduce((sum, fee) => sum + parseFloat(fee.totalAmount || 0), 0);
+    const totalPaid = feeList.reduce((sum, fee) => sum + parseFloat(fee.totalPaid || 0), 0);
+    const totalDue = feeList.reduce((sum, fee) => sum + parseFloat(fee.balanceAmount || 0), 0);
     
     setSummary({
-      total_fees,
-      total_collected,
-      total_due,
-      total_records: feeList.length
+      totalFees,
+      totalPaid,
+      totalDue,
+      totalRecords: feeList.length
     });
   };
 
@@ -165,7 +175,7 @@ const AllFeesView = ({ userRole, onAddPayment }) => {
       fee.totalPaid,
       fee.balanceAmount,
       fee.status,
-      new Date(fee.dueDate).toLocaleDateString()
+      fee.dueDate ? new Date(fee.dueDate).toLocaleDateString() : ''
     ]);
     
     const csvContent = [headers, ...csvData].map(row => row.join(',')).join('\n');
@@ -194,7 +204,7 @@ const AllFeesView = ({ userRole, onAddPayment }) => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm opacity-90">Total Records</p>
-              <p className="text-2xl font-bold">{summary.total_records}</p>
+              <p className="text-2xl font-bold">{summary.totalRecords || 0}</p>
             </div>
             <Users className="w-8 h-8 opacity-80" />
           </div>
@@ -203,7 +213,7 @@ const AllFeesView = ({ userRole, onAddPayment }) => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm opacity-90">Total Fees</p>
-              <p className="text-2xl font-bold">₹{summary.total_fees.toLocaleString()}</p>
+              <p className="text-2xl font-bold">₹{(summary.totalFees || 0).toLocaleString()}</p>
             </div>
             <Wallet className="w-8 h-8 opacity-80" />
           </div>
@@ -212,7 +222,7 @@ const AllFeesView = ({ userRole, onAddPayment }) => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm opacity-90">Total Collected</p>
-              <p className="text-2xl font-bold">₹{summary.total_collected.toLocaleString()}</p>
+              <p className="text-2xl font-bold">₹{(summary.totalPaid || 0).toLocaleString()}</p>
             </div>
             <TrendingUp className="w-8 h-8 opacity-80" />
           </div>
@@ -221,7 +231,7 @@ const AllFeesView = ({ userRole, onAddPayment }) => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm opacity-90">Total Due</p>
-              <p className="text-2xl font-bold">₹{summary.total_due.toLocaleString()}</p>
+              <p className="text-2xl font-bold">₹{(summary.totalDue || 0).toLocaleString()}</p>
             </div>
             <DollarSign className="w-8 h-8 opacity-80" />
           </div>
@@ -333,10 +343,10 @@ const AllFeesView = ({ userRole, onAddPayment }) => {
                   <p className="text-sm font-medium">{fee.feeMonth}</p>
                   <p className="text-xs text-gray-500">{fee.feeYear}</p>
                 </td>
-                <td className="px-4 py-3 text-right font-semibold">₹{parseFloat(fee.totalAmount).toLocaleString()}</td>
-                <td className="px-4 py-3 text-right text-green-600 font-medium">₹{parseFloat(fee.totalPaid).toLocaleString()}</td>
-                <td className="px-4 py-3 text-right text-red-600 font-medium">₹{parseFloat(fee.balanceAmount).toLocaleString()}</td>
-                <td className="px-4 py-3 text-sm">{new Date(fee.dueDate).toLocaleDateString()}</td>
+                <td className="px-4 py-3 text-right font-semibold">₹{parseFloat(fee.totalAmount || 0).toLocaleString()}</td>
+                <td className="px-4 py-3 text-right text-green-600 font-medium">₹{parseFloat(fee.totalPaid || 0).toLocaleString()}</td>
+                <td className="px-4 py-3 text-right text-red-600 font-medium">₹{parseFloat(fee.balanceAmount || 0).toLocaleString()}</td>
+                <td className="px-4 py-3 text-sm">{fee.dueDate ? new Date(fee.dueDate).toLocaleDateString() : 'N/A'}</td>
                 <td className="px-4 py-3 text-center">
                   <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(fee.status)}`}>
                     {getStatusIcon(fee.status)}
@@ -406,7 +416,7 @@ const AllFeesView = ({ userRole, onAddPayment }) => {
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <p><span className="text-gray-500">Period:</span> {selectedFee.feeMonth}</p>
                   <p><span className="text-gray-500">Year:</span> {selectedFee.feeYear}</p>
-                  <p><span className="text-gray-500">Due Date:</span> {new Date(selectedFee.dueDate).toLocaleDateString()}</p>
+                  <p><span className="text-gray-500">Due Date:</span> {selectedFee.dueDate ? new Date(selectedFee.dueDate).toLocaleDateString() : 'N/A'}</p>
                   <p><span className="text-gray-500">Status:</span> 
                     <span className={`ml-2 inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(selectedFee.status)}`}>
                       {getStatusIcon(selectedFee.status)}
@@ -421,14 +431,14 @@ const AllFeesView = ({ userRole, onAddPayment }) => {
                 <h4 className="font-semibold text-gray-700 mb-2">Fee Breakdown</h4>
                 <div className="space-y-2">
                   {selectedFee.feeComponents?.map((component, idx) => (
-                    <div key={idx} className="flex justify-between text-sm py-1">
+                    <div key={idx} className="flex justify-between text-sm py-1 border-b">
                       <span>{component.name}</span>
-                      <span className="font-semibold">₹{parseFloat(component.amount).toLocaleString()}</span>
+                      <span className="font-semibold">₹{parseFloat(component.amount || 0).toLocaleString()}</span>
                     </div>
                   ))}
                   <div className="border-t pt-2 mt-2 flex justify-between font-bold">
                     <span>Total Amount</span>
-                    <span>₹{parseFloat(selectedFee.totalAmount).toLocaleString()}</span>
+                    <span>₹{parseFloat(selectedFee.totalAmount || 0).toLocaleString()}</span>
                   </div>
                 </div>
               </div>
@@ -441,12 +451,12 @@ const AllFeesView = ({ userRole, onAddPayment }) => {
                     {selectedFee.payments.map((payment, idx) => (
                       <div key={idx} className="flex justify-between text-sm border-b pb-2">
                         <div>
-                          <p className="font-medium">{new Date(payment.date).toLocaleDateString()}</p>
+                          <p className="font-medium">{payment.date ? new Date(payment.date).toLocaleDateString() : 'N/A'}</p>
                           <p className="text-xs text-gray-500">Mode: {payment.mode}</p>
                           {payment.receiptNo && <p className="text-xs text-gray-500">Receipt: {payment.receiptNo}</p>}
                         </div>
                         <div className="text-right">
-                          <p className="font-semibold text-green-600">₹{parseFloat(payment.amount).toLocaleString()}</p>
+                          <p className="font-semibold text-green-600">₹{parseFloat(payment.amount || 0).toLocaleString()}</p>
                         </div>
                       </div>
                     ))}
@@ -498,7 +508,7 @@ const AllFeesView = ({ userRole, onAddPayment }) => {
               </div>
               <div>
                 <p className="text-sm text-gray-600 mb-1">Balance Due</p>
-                <p className="text-2xl font-bold text-red-600">₹{parseFloat(selectedFee.balanceAmount).toLocaleString()}</p>
+                <p className="text-2xl font-bold text-red-600">₹{parseFloat(selectedFee.balanceAmount || 0).toLocaleString()}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Payment Amount *</label>
