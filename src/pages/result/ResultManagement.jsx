@@ -86,8 +86,6 @@ const ResultManagement = () => {
   // ✅ Updated tabs with 4 options
   const tabs = [
     { id: 'add', label: 'Add Result', icon: Plus, color: 'purple', description: 'Add student exam results' },
-    { id: 'create-exam', label: 'Create Exam', icon: GraduationCap, color: 'blue', description: 'Create new examinations' },
-    { id: 'view-exams', label: 'View Exams', icon: List, color: 'cyan', description: 'View all created exams' },
     { id: 'view-results', label: 'View Results', icon: Eye, color: 'green', description: 'View all published results' }
   ];
 
@@ -201,8 +199,6 @@ const ResultManagement = () => {
               <div className={`w-2 h-2 rounded-full animate-pulse bg-${tabs.find(t => t.id === activeTab)?.color}-500`}></div>
               <span className="text-sm font-medium text-gray-600">
                 {activeTab === 'add' && 'Adding New Student Result'}
-                {activeTab === 'create-exam' && 'Creating New Exam'}
-                {activeTab === 'view-exams' && 'Viewing All Exams'}
                 {activeTab === 'view-results' && 'Viewing Published Results'}
               </span>
             </div>
