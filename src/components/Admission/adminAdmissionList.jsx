@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../utils/api';
 import { 
   Eye, CheckCircle, XCircle, Clock, AlertCircle, 
-  Search, Filter, Download, Loader, FileText, 
+  Search, Filter, Download, Loader, FileText, User,
   Calendar, Users, BookOpen, TrendingUp
 } from 'lucide-react';
 
